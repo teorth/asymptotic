@@ -1,6 +1,6 @@
 // Lean compiler output
 // Module: Asymptotic.majorize
-// Imports: Init Mathlib.Analysis.Normed.Group.Basic Mathlib.Analysis.NormedSpace.Basic Mathlib.Analysis.Normed.Group.InfiniteSum
+// Imports: Init Mathlib.Analysis.Normed.Group.Basic Mathlib.Analysis.NormedSpace.Basic Mathlib.Analysis.Normed.Group.InfiniteSum Mathlib.Analysis.Asymptotics.Asymptotics Mathlib.Order.MinMax
 #include <lean/lean.h>
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wunused-parameter"
@@ -1245,6 +1245,8 @@ lean_object* initialize_Init(uint8_t builtin, lean_object*);
 lean_object* initialize_Mathlib_Analysis_Normed_Group_Basic(uint8_t builtin, lean_object*);
 lean_object* initialize_Mathlib_Analysis_NormedSpace_Basic(uint8_t builtin, lean_object*);
 lean_object* initialize_Mathlib_Analysis_Normed_Group_InfiniteSum(uint8_t builtin, lean_object*);
+lean_object* initialize_Mathlib_Analysis_Asymptotics_Asymptotics(uint8_t builtin, lean_object*);
+lean_object* initialize_Mathlib_Order_MinMax(uint8_t builtin, lean_object*);
 static bool _G_initialized = false;
 LEAN_EXPORT lean_object* initialize_Asymptotic_majorize(uint8_t builtin, lean_object* w) {
 lean_object * res;
@@ -1260,6 +1262,12 @@ res = initialize_Mathlib_Analysis_NormedSpace_Basic(builtin, lean_io_mk_world())
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 res = initialize_Mathlib_Analysis_Normed_Group_InfiniteSum(builtin, lean_io_mk_world());
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_Mathlib_Analysis_Asymptotics_Asymptotics(builtin, lean_io_mk_world());
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_Mathlib_Order_MinMax(builtin, lean_io_mk_world());
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 l_Asymptotics_term___u226a_x5b___x5d_____closed__1 = _init_l_Asymptotics_term___u226a_x5b___x5d_____closed__1();
