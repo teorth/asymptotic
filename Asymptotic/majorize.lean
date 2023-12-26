@@ -1,6 +1,8 @@
 import Mathlib.Analysis.Normed.Group.Basic
 import Mathlib.Analysis.NormedSpace.Basic
 import Mathlib.Analysis.Normed.Group.InfiniteSum
+import Mathlib.Analysis.Asymptotics.Asymptotics
+import Mathlib.Order.MinMax
 
 namespace Asymptotics
 
@@ -15,6 +17,43 @@ notation:10 X " ≪[" C "] " Y => Ll C X Y
 
 @[simp]
 lemma ll_def (C:NNReal) [NeZero C] (X:E) (Y:ℝ) : (X ≪[C] Y) ↔ (‖X‖ ≤ C * Y) := by rfl
+
+lemma isBigOWith_iff_ll {α : Type*} {C : NNReal} [NeZero C] {l : Filter α} {X : α → E} {Y : α → ℝ} (hY: ∀ x, 0 ≤ Y x): IsBigOWith C l X Y ↔ ∀ᶠ x in l, X x ≪[C] Y x := by
+  simp
+  rw [IsBigOWith_def]
+  apply iff_of_eq
+  congr with x
+  simp
+  rw [abs_of_nonneg (hY x)]
+
+private lemma real_le_nnreal (x:ℝ) : ∃ (y:NNReal) (hy: NeZero y), x ≤ y := by
+  use (max 1 x).toNNReal
+  have : NeZero (max 1 x).toNNReal := by
+    rw [neZero_iff]
+    by_contra h
+    have := Real.le_coe_toNNReal (max 1 x)
+    simp [h] at this
+    linarith [this.1]
+  use this
+  rw [Real.coe_toNNReal _ (le_max_of_le_left zero_le_one)]
+  exact le_max_right 1 x
+
+lemma isBigO_iff_ll {α : Type*} (l : Filter α) (X : α → E) (Y : α → ℝ) (hY: ∀ x, 0 ≤ Y x) : X =O[l] Y ↔ ∃ (C:NNReal) (hC: NeZero C), ∀ᶠ x in l, X x ≪[C] Y x := by
+  rw [IsBigO_def]
+  constructor
+  . rintro ⟨ c, hc ⟩
+    rw [Asymptotics.isBigOWith_iff] at hc
+    rcases real_le_nnreal c with ⟨ C, hC, hC' ⟩
+    use C, hC
+    apply Filter.Eventually.mono hc
+    intro x hx
+    simp [abs_of_nonneg (hY x)] at hx ⊢
+    apply hx.trans
+    exact mul_le_mul_of_nonneg_right hC' (hY x)
+  rintro ⟨ C, hC, h ⟩
+  rw [<-isBigOWith_iff_ll hY] at h
+  use C
+
 
 lemma nonneg_of_ll {C:NNReal} [NeZero C] {X:E} {Y:ℝ} (h: X ≪[C] Y) : 0 ≤ Y  := by
   simp at h
