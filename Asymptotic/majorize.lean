@@ -186,7 +186,13 @@ lemma tsum_ll_tsum {C:NNReal} {Ω :Type*} [CompleteSpace E] {X: Ω → E} {Y: Ω
 
 notation:10 X " =[" C "] " Y " + O(" Z ")" => Ll C (X-Y) Z
 
+
 lemma eqPlusBigO_def (C:NNReal) (X Y:E) (Z:ℝ) : (X =[C] Y + O(Z)) ↔ (‖X-Y‖ ≪[C] Z) := by simp
+
+lemma eqPlusBigO_iff_le_and_ge (C:NNReal) (X Y:ℝ) : (X =[C] Y + O(Z)) ↔ (X ≤ Y + C*Z ∧ X ≥ Y - C*Z) := by
+  simp [abs_le]
+  rw [add_comm (C*Z) Y]
+  exact and_comm
 
 lemma eqPlusBigO_rfl (C:NNReal) (X:E) {Z:ℝ} (hZ: 0 ≤ Z) : (X =[C] X + O(Z)) := by
   simp; positivity
