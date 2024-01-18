@@ -113,6 +113,10 @@ lemma add_ll_add {C₁ C₂:NNReal} (hC₁: C₁ ≠ 0) (hC₂: C₂ ≠ 0) {X�
   . exact mul_le_mul_of_nonneg_right (le_max_left C₁ C₂) (nonneg_of_ll hC₁ h1)
   exact mul_le_mul_of_nonneg_right (le_max_right C₁ C₂) (nonneg_of_ll hC₂ h2)
 
+lemma add_ll_add' {C:NNReal} (hC: C ≠ 0) {X₁ X₂:E} {Y₁ Y₂:ℝ} (h1: X₁ ≪[C] Y₁) (h2: X₂ ≪[C] Y₂) : X₁ + X₂ ≪[C] Y₁ + Y₂ := by
+  convert add_ll_add hC hC h1 h2
+  exact (max_self C).symm
+
 lemma sub_ll {C₁ C₂:NNReal} {X₁ X₂:E} (Y:ℝ) (h1: X₁ ≪[C₁] Y) (h2: X₂ ≪[C₂] Y) : X₁ - X₂ ≪[C₁ + C₂] Y := by
   simp at h1 h2 ⊢
   apply (norm_sub_le X₁ X₂).trans
@@ -128,13 +132,17 @@ lemma sub_ll_add {C₁ C₂:NNReal} (hC₁: C₁ ≠ 0) (hC₂: C₂ ≠ 0) {X�
   . exact mul_le_mul_of_nonneg_right (le_max_left C₁ C₂) (nonneg_of_ll hC₁ h1)
   exact mul_le_mul_of_nonneg_right (le_max_right C₁ C₂) (nonneg_of_ll hC₂ h2)
 
+lemma sub_ll_add' {C:NNReal} (hC: C ≠ 0) {X₁ X₂:E} {Y₁ Y₂:ℝ} (h1: X₁ ≪[C] Y₁) (h2: X₂ ≪[C] Y₂) : X₁ - X₂ ≪[C] Y₁ + Y₂ := by
+  convert sub_ll_add hC hC h1 h2
+  exact (max_self C).symm
+
 lemma mul_ll_mul {C₁ C₂:NNReal} (hC₁: C₁ ≠ 0) {X₁ X₂:k} {Y₁ Y₂:ℝ} (h1: X₁ ≪[C₁] Y₁) (h2: X₂ ≪[C₂] Y₂) : X₁*X₂ ≪[C₁ * C₂] Y₁ * Y₂ := by
   have := nonneg_of_ll hC₁ h1;
   simp at h1 h2 ⊢
   convert mul_le_mul h1 h2 (norm_nonneg _) (by positivity) using 1
   ring
 
-lemma mul_ll_mul' {C₁ C₂:NNReal} (hC₁: C₁ ≠ 0)  {a:ℝ} {X:V} {Y Z:ℝ} (h1: a ≪[C₁] Y) (h2: X ≪[C₂] Z) : a • X ≪[C₁ * C₂] Y * Z := by
+lemma smul_ll_mul {C₁ C₂:NNReal} (hC₁: C₁ ≠ 0)  {a:ℝ} {X:V} {Y Z:ℝ} (h1: a ≪[C₁] Y) (h2: X ≪[C₂] Z) : a • X ≪[C₁ * C₂] Y * Z := by
   have := nonneg_of_ll hC₁ h1
   simp at h1 h2 ⊢
   rw [norm_smul]
@@ -146,10 +154,10 @@ lemma mul_ll_mul_left {C:NNReal} (hC: C ≠ 0) {X:k} {Y:ℝ} (h: X ≪[C] Y) (a:
   . simp [hC]
   exact mul_ll_mul one_ne_zero (ll_abs a) h
 
-lemma mul_ll_mul_left' {C:NNReal} (hC: C ≠ 0) {X:V} {Y:ℝ} (h: X ≪[C] Y) (a:ℝ): a • X ≪[C] ‖a‖ * Y := by
+lemma smul_ll_mul_left {C:NNReal} (hC: C ≠ 0) {X:V} {Y:ℝ} (h: X ≪[C] Y) (a:ℝ): a • X ≪[C] ‖a‖ * Y := by
   apply ll_increase_const _ _ (show 1*C ≤ C by simp)
   . simp [hC]
-  exact mul_ll_mul' one_ne_zero (ll_abs a) h
+  exact smul_ll_mul one_ne_zero (ll_abs a) h
 
 lemma mul_ll_mul_right {C:NNReal} (hC: C ≠ 0) {X:k} {Y:ℝ} (h: X ≪[C] Y) (a:k) : X*a ≪[C] Y * ‖a‖ := by
   rw [mul_comm X _, mul_comm Y _]
@@ -187,7 +195,9 @@ lemma tsum_ll_tsum {C:NNReal} {Ω :Type*} [CompleteSpace E] {X: Ω → E} {Y: Ω
 notation:10 X " =[" C "] " Y " + O(" Z ")" => Ll C (X-Y) Z
 
 
-lemma eqPlusBigO_def (C:NNReal) (X Y:E) (Z:ℝ) : (X =[C] Y + O(Z)) ↔ (‖X-Y‖ ≪[C] Z) := by simp
+lemma eqPlusBigO_def (C:NNReal) (X Y:E) (Z:ℝ) : (X =[C] Y + O(Z)) ↔ (X-Y ≪[C] Z) := by rfl
+
+lemma eqPlusBigO_def' (C:NNReal) (X Y:E) (Z:ℝ) : (X =[C] Y + O(Z)) ↔ (‖X-Y‖ ≪[C] Z) := by simp
 
 lemma eqPlusBigO_iff_le_and_ge (C:NNReal) (X Y:ℝ) : (X =[C] Y + O(Z)) ↔ (X ≤ Y + C*Z ∧ X ≥ Y - C*Z) := by
   simp [abs_le]
@@ -207,9 +217,18 @@ lemma eqPlusBigO_trans {C C':NNReal} {X Y Z:E} {W:ℝ} (h: X =[C] Y + O(W)) (h':
   convert add_le_add h h' using 1
   ring
 
-lemma eqPlusBigO_trans' {C C':NNReal} (hC: C ≠ 0) (hC': C' ≠ 0) (X Y Z:E) {W W':ℝ} (h: X =[C] Y + O(W)) (h': Y =[C'] Z + O(W')) : (X =[max C C'] Z + O(W + W')) := by
-  rw [eqPlusBigO_def, <-dist_eq_norm_sub] at h h' ⊢
+lemma eqPlusBigO_trans' {C C':NNReal} (hC: C ≠ 0) (hC': C' ≠ 0) {X Y Z:E} {W W':ℝ} (h: X =[C] Y + O(W)) (h': Y =[C'] Z + O(W')) : (X =[max C C'] Z + O(W + W')) := by
+  rw [eqPlusBigO_def', <-dist_eq_norm_sub] at h h' ⊢
   exact ll_of_le_of_ll' (dist_nonneg) (dist_triangle X Y Z) (add_ll_add hC hC' h h')
+
+lemma eqPlusBigO_of_zero (C:NNReal) (X:E) {Y:ℝ} : (X =[C] 0 + O(Y)) ↔ (X ≪[C] Y) := by
+  rw [sub_zero]
+
+lemma eqPlusBigO_increase_const {C₁ C₂:NNReal} (hC₁: C₁ ≠ 0) {X Y:E} {Z:ℝ} (hXY : X=[C₁] Y + O(Z)) (hC : C₁ ≤ C₂) : X =[C₂] Y + O(Z) := ll_increase_const hC₁ hXY hC
+
+lemma eqPlusBigO_of_ll {C₁ C₂: NNReal} (hC₁: C₁ ≠ 0) (X:E) {Y:E} {Z Z':ℝ} (h: X =[C₁] Y + O(Z)) (h': Z ≪[C₂] Z'): X =[C₁*C₂] Y + O(Z') := ll_trans hC₁ h h'
+
+lemma eqPlusBigO_of_le {C: NNReal} (X:E) {Y:E} {Z Z':ℝ} (h: X =[C] Y + O(Z)) (h': Z ≤ Z'): X =[C] Y + O(Z') := ll_of_ll_of_le h h'
 
 lemma add_eqPlusBigO {C: NNReal} (X:E) {Y:E} {Z:ℝ} (h: Y ≪[C] Z) : X + Y =[C] X + O(Z) := by
   simp at h ⊢
@@ -219,6 +238,42 @@ lemma sub_eqPlusBigO {C: NNReal} (X:E) {Y:E} {Z:ℝ} (h: Y ≪[C] Z) : X - Y =[C
   simp at h ⊢
   exact h
 
+lemma neg_of_eqPlusBigO  {C:NNReal} {X Y: E} {Z:ℝ} (h: X =[C] Y + O(Z)) : -X =[C] -Y + O(Z) := by
+  rw [neg_ll] at h
+  convert h using 1
+  abel
+
+lemma add_of_eqPlusBigO {C:NNReal} {X Y X' Y': E} {Z Z':ℝ} (h: X =[C] Y + O(Z)) (h': X' =[C] Y' + O(Z')) : X + X' =[C] Y+Y' + O(Z+Z') := by
+  rw [ll_def] at h h' ⊢
+  rw [(show X+X' - (Y+Y') = (X-Y)+(X'-Y') by abel), (show C * (Z + Z') = C*Z + C*Z' by ring)]
+  exact LE.le.trans (norm_add_le _ _) (add_le_add h h')
+
+lemma sub_of_eqPlusBigO {C:NNReal} {X Y X' Y': E} {Z Z':ℝ} (h: X =[C] Y + O(Z)) (h': X' =[C] Y' + O(Z')) : X - X' =[C] Y-Y' + O(Z+Z') := by
+  rw [ll_def] at h h' ⊢
+  rw [(show X-X' - (Y-Y') = (X-Y)-(X'-Y') by abel), (show C * (Z + Z') = C*Z + C*Z' by ring)]
+  apply LE.le.trans (norm_sub_le _ _) (add_le_add h h')
+
 lemma sum_of_eqPlusBigO {C:NNReal} {Ω :Type*} {S: Finset Ω} {X Y: Ω → E} {Z: Ω → ℝ} (h: ∀ s ∈ S, X s=[C] Y s + O(Z s)) : (∑ s in S, X s) =[C] ∑ s in S, Y s + O(∑ s in S, Z s):= by
-  rw [eqPlusBigO_def, <-Finset.sum_sub_distrib, <-norm_ll_iff]
+  rw [eqPlusBigO_def', <-Finset.sum_sub_distrib, <-norm_ll_iff]
   apply sum_ll_sum h
+
+lemma mul_eqPlusBigO_mul {C₁ C₂:NNReal} (hC₁: C₁ ≠ 0) (hC₂: C₂ ≠ 0) {X₁ X₂ Y₁ Y₂:k} {Z₁ Z₂ W₁ W₂:ℝ} (h1: X₁ =[C₁] Y₁ + O(Z₁)) (h2: X₂ =[C₂] Y₂ + O(Z₂)) (h1': Y₁ ≪[C₁] W₁) (h2': Y₂ ≪[C₂] W₂) : X₁*X₂ =[C₁*C₂] Y₁ * Y₂ + O(Z₁*W₂+W₁*Z₂+Z₁*Z₂):= by
+  have : X₁*X₂ - Y₁*Y₂ = (X₁-Y₁)*Y₂ + Y₁*(X₂-Y₂) + (X₁-Y₁)*(X₂-Y₂) := by ring
+  rw [this]
+  have hC: C₁ * C₂ ≠ 0 := mul_ne_zero hC₁ hC₂
+  apply add_ll_add' hC (add_ll_add' hC _ _) _
+  . exact mul_ll_mul hC₁ h1 h2'
+  . exact mul_ll_mul hC₁ h1' h2
+  . apply mul_ll_mul hC₁ h1 h2
+
+lemma mul_eqPlusBigO_mul_left {C:NNReal} (hC: C ≠ 0) {X Y:k} {Z:ℝ} (h: X =[C] Y + O(Z)) (a:k): a*X =[C] a*Y + O(‖a‖ * Z) := by
+  convert mul_ll_mul_left hC h a using 1
+  exact (mul_sub a X Y).symm
+
+lemma smul_eqPlusBigO_mul_left {C:NNReal} (hC: C ≠ 0) {X Y:V} {Z:ℝ} (h: X =[C] Y + O(Z)) (a:ℝ): a • X =[C] a • Y + O(‖a‖ * Z) := by
+  convert smul_ll_mul_left hC h a using 1
+  exact (smul_sub a X Y).symm
+
+lemma mul_eqPlusBigO_mul_right {C:NNReal} (hC: C ≠ 0) {X Y:k} {Z:ℝ} (h: X =[C] Y + O(Z)) (a:k): X*a =[C] Y*a + O(Z * ‖a‖) := by
+  convert mul_ll_mul_right hC h a using 1
+  exact (sub_mul X Y a).symm

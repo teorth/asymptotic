@@ -6,6 +6,7 @@ import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.MeasureTheory.Integral.SetIntegral
 import Mathlib.MeasureTheory.Integral.IntervalIntegral
 import Mathlib.MeasureTheory.Integral.FundThmCalculus
+import Mathlib.Data.Set.Intervals.OrdConnected
 
 lemma Nat.floor_eqPlusBigO {x: ℝ} (hx: 0 ≤ x) : ⌊x⌋₊ =[1] x + O(1) := by
   simp [abs_le]
@@ -104,7 +105,7 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E
 
 open BigOperators MeasureTheory
 
-lemma ftoc {a b c:ℝ} (h: a ≤ b) (f: ℝ → E) (hcont: ContinuousOn f (Set.Icc a b))  (hderiv: ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t) (hcont': ContinuousOn (deriv f) (Set.Icc a b))
+lemma ftoc {a b c:ℝ} (f: ℝ → E) (hderiv: ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t) (hcont': ContinuousOn (deriv f) (Set.Icc a b))
  (hc: c ∈ Set.Icc a b) : ∀ x ∈ Set.Icc a b, f x = f c + ∫ t in Set.Icc a b, (if t ≥ c then (if x ≥ t then 1 else 0) else -(if x ≤ t then 1 else 0)) • deriv f t ∂ volume := by
   intro x hx
   simp at hc
@@ -168,7 +169,7 @@ lemma ftoc {a b c:ℝ} (h: a ≤ b) (f: ℝ → E) (hcont: ContinuousOn f (Set.I
   . exact MeasurableSet.nullMeasurableSet measurableSet_Icc
   . simp at hx
     intro t; simp
-    intro h1 h2; exact ⟨ by linarith only [hx.1, h1], ht.2.trans hc.2 ⟩
+    intro h1 h2; exact ⟨ by linarith only [hx.1, h1], h2.trans hc.2 ⟩
   rw [ae_iff, measure_mono_null (s₂ := {c} ∪ {x})]
   . intro t ht
     simp at ht ⊢
@@ -180,13 +181,86 @@ lemma ftoc {a b c:ℝ} (h: a ≤ b) (f: ℝ → E) (hcont: ContinuousOn f (Set.I
     simp [h'] at ht
     contrapose! h'
     exact LT.lt.le (ht.1 ((Ne.le_iff_lt h'.1.symm).mp ht.2.2.2.1))
+  exact measure_union_null Real.volume_singleton Real.volume_singleton
 
 
-open Classical
+open Classical Asymptotics
 
 noncomputable def discretize (I: Set ℝ) : Finset ℤ := if h : Set.Finite {n:ℤ | (n:ℝ) ∈ I } then h.toFinset else ∅
 
+lemma finite_of_bounded {I: Set ℤ} (hu: BddAbove I) (hl: BddBelow I) : Set.Finite I := by
+  rw [bddAbove_def] at hu
+  rw [bddBelow_def] at hl
+  rcases hu with ⟨ b, hb ⟩
+  rcases hl with ⟨ a, ha ⟩
+  apply Set.Finite.subset (Set.finite_Icc a b) _
+  intro y hy
+  simp [ha y hy, hb y hy]
 
-lemma sum_approx_eq_integral {a b c:ℝ} (h: a ≤ b) (f: ℝ → E) (hcont: ContinuousOn f (Set.Icc a b))  (hderiv: ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t) (hcont': ContinuousOn (deriv f) (Set.Icc a b)) (hc: c ∈ Set.Icc a b) (I: Set ℝ) (hI: Set.Ioo a b ⊆ I) (hI': I ⊆ Set.Icc a b) : ∑ n in discretize I, f n =[1] ∫ t in I, f t ∂ volume + O( ‖f c‖ + ∫ t in I, ‖deriv f t‖ ∂ volume) := by
+lemma discretize_finite {I: Set ℝ} (hu: BddAbove I) (hl: BddBelow I) : Set.Finite {n:ℤ | (n:ℝ) ∈ I } := by
+  apply finite_of_bounded
+  . rw [bddAbove_def] at hu ⊢
+    rcases hu with ⟨ x, hx ⟩
+    use ⌈ x ⌉
+    intro n hn
+    simp at hn
+    replace hn := (hx n hn).trans (Int.le_ceil x)
+    norm_cast at hn
+  rw [bddBelow_def] at hl ⊢
+  rcases hl with ⟨ x, hx ⟩
+  use ⌊ x ⌋
+  intro n hn
+  simp at hn
+  replace hn := (Int.floor_le x).trans (hx n hn)
+  norm_cast at hn
+
+lemma discretize_mem {I: Set ℝ} (hu: BddAbove I) (hl: BddBelow I) (n:ℤ) : n ∈ discretize I ↔ (n:ℝ) ∈ I := by
+  have := discretize_finite hu hl
+  simp [discretize, this]
+
+lemma unit_interval_subset_or_inf {I : Set ℝ} [hI: Set.OrdConnected I]  (hu: BddAbove I) (hl: BddBelow I) {n : ℤ} (hn: n ∈ discretize I) (hsub: ¬ Set.Icc ((n:ℝ)-1) (n:ℝ) ⊆ I) : IsLeast (discretize I) n := by
+  rcases Set.not_subset.mp hsub with ⟨ x, ⟨ hx1, hx2 ⟩ ⟩
+  simp at hx1
+  simp [IsLeast]
+  refine ⟨ hn, ?_ ⟩
+  simp [lowerBounds]
+  intro m hm
+  contrapose! hx2
+  have sub : Set.Icc (m:ℝ) (n:ℝ) ⊆ I := by
+    apply Set.OrdConnected.out hI
+    . exact (discretize_mem hu hl m).mp hm
+    exact (discretize_mem hu hl n).mp hn
+  apply sub
+  have : (m:ℝ) ≤ (n:ℝ)-1 := by norm_cast; linarith only [hx2]
+  simp; refine ⟨ this.trans ?_, hx1.2 ⟩; linarith only [hx1.1]
+
+example (A B : Prop) (h: ¬A → B) : A ∨ B := by exact or_iff_not_imp_left.mpr h
+
+lemma unit_interval_cover {I : Set ℝ} [hI: Set.OrdConnected I]  (hu: BddAbove I) (hl: BddBelow I) {a : ℝ} (ha: IsGLB I a) : I ⊆ (Set.Ico a (a+1)) ∪ ⋃ n ∈ discretize I, Set.Ico (n:ℝ) (n+1) := by
+  intro x hx
   simp
+  rw [or_iff_not_imp_left]
+  intro ha'
+  replace ha' : x ≥ a+1 := by
+    contrapose! ha'
+    exact ⟨ (Set.mem_of_mem_inter_left ha) hx, ha' ⟩
+  use ⌊ x ⌋
+  refine ⟨ Int.floor_le x, ?_, Int.lt_floor_add_one x ⟩
+  rw [discretize_mem hu hl _]
+  have : a < ⌊ x ⌋ := lt_of_le_of_lt (le_sub_iff_add_le.mpr ha') (Int.sub_one_lt_floor x)
+  rcases (isGLB_lt_iff ha).mp this with ⟨ y, ⟨ hy, hy' ⟩ ⟩
+  apply (Set.OrdConnected.out hI hy hx) _
+  simp
+  exact ⟨ le_of_lt hy', Int.floor_le x⟩
+
+lemma sum_approx_eq_integral {a b c:ℝ} (h: a ≤ b) (f: ℝ → E)  (hderiv: ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t) (hcont': ContinuousOn (deriv f) (Set.Icc a b)) (hc: c ∈ Set.Icc a b) (I: Set ℝ) (hI: Set.Ioo a b ⊆ I) (hI': I ⊆ Set.Icc a b) : ∑ n in discretize I, f n =[1] ∫ t in I, f t ∂ volume + O( ‖f c‖ + ∫ t in I, ‖deriv f t‖ ∂ volume) := by
+  let χ : ℝ → ℝ → ℤ := fun s ↦ fun x ↦ if s ≥ c then (if x ≥ s then 1 else 0) else -(if x ≤ s then 1 else 0)
+  have repr : ∀ x ∈ Set.Icc a b, f x = f c + ∫ s in Set.Icc a b, (χ s x) • deriv f s ∂ volume := ftoc f hderiv hcont' hc
+  have split_lhs : ∑ n in discretize I, f n = ∑ n in discretize I, f c + ∫ s in Set.Icc a b, ∑ n in discretize I, (χ s n) • deriv f s := by
+    sorry
+  have split_rhs : ∫ t in I, f t ∂ volume = ∫ t in I, f c ∂ volume + ∫ s in Set.Icc a b, (∫ t in I, (χ s t) • deriv f s ∂ volume) ∂ volume := by
+    sorry
+  rw [split_lhs, split_rhs]
+  apply add_of_eqPlusBigO _ _
+  . sorry
   sorry
