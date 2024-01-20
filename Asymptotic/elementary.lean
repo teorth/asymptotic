@@ -218,7 +218,8 @@ lemma discretize_mem {I: Set ℝ} (hu: BddAbove I) (hl: BddBelow I) (n:ℤ) : n 
   have := discretize_finite hu hl
   simp [discretize, this]
 
-lemma unit_interval_subset_or_inf {I : Set ℝ} [hI: Set.OrdConnected I]  (hu: BddAbove I) (hl: BddBelow I) {n : ℤ} (hn: n ∈ discretize I) (hsub: ¬ Set.Icc ((n:ℝ)-1) (n:ℝ) ⊆ I) : IsLeast (discretize I) n := by
+lemma unit_interval_subset_or_inf {I : Set ℝ} [hI: Set.OrdConnected I]  (hu: BddAbove I) (hl: BddBelow I) {n : ℤ} (hn: n ∈ discretize I) (hsub: ¬ IsLeast (discretize I) n) : Set.Ico ((n:ℝ)-1) (n:ℝ) ⊆ I := by
+  contrapose! hsub
   rcases Set.not_subset.mp hsub with ⟨ x, ⟨ hx1, hx2 ⟩ ⟩
   simp at hx1
   simp [IsLeast]
@@ -232,9 +233,7 @@ lemma unit_interval_subset_or_inf {I : Set ℝ} [hI: Set.OrdConnected I]  (hu: B
     exact (discretize_mem hu hl n).mp hn
   apply sub
   have : (m:ℝ) ≤ (n:ℝ)-1 := by norm_cast; linarith only [hx2]
-  simp; refine ⟨ this.trans ?_, hx1.2 ⟩; linarith only [hx1.1]
-
-example (A B : Prop) (h: ¬A → B) : A ∨ B := by exact or_iff_not_imp_left.mpr h
+  simp; refine ⟨ this.trans ?_, le_of_lt hx1.2 ⟩; linarith only [hx1.1]
 
 lemma unit_interval_cover {I : Set ℝ} [hI: Set.OrdConnected I]  (hu: BddAbove I) (hl: BddBelow I) {a : ℝ} (ha: IsGLB I a) : I ⊆ (Set.Ico a (a+1)) ∪ ⋃ n ∈ discretize I, Set.Ico (n:ℝ) (n+1) := by
   intro x hx
@@ -252,6 +251,94 @@ lemma unit_interval_cover {I : Set ℝ} [hI: Set.OrdConnected I]  (hu: BddAbove 
   apply (Set.OrdConnected.out hI hy hx) _
   simp
   exact ⟨ le_of_lt hy', Int.floor_le x⟩
+
+lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (hf: AntitoneOn f (Set.Icc a b)) (hf': f b ≥ 0) (I: Set ℝ) (hI: Set.Ioo a b ⊆ I) (hI': I ⊆ Set.Icc a b) : ∑ n in discretize I, f n =[1] ∫ t in I, f t ∂ volume + O( f a ) := by
+  have hu : BddAbove I := BddAbove.mono hI' bddAbove_Icc
+  have hl : BddBelow I := BddBelow.mono hI' bddBelow_Icc
+  have hc : Set.OrdConnected I := by
+    apply Set.ordConnected_of_Ioo
+    intro x hx y hy hxy
+    apply LE.le.trans _ hI
+    intro z hz
+    replace hx := hI' hx
+    replace hy := hI' hy
+    simp at hz hx hy ⊢
+    exact ⟨ lt_of_le_of_lt hx.1 hz.1, lt_of_lt_of_le hz.2 hy.2 ⟩
+  have hmes: MeasurableSet I := by sorry
+  have hinteg: IntegrableOn f I := by sorry
+  rw [eqPlusBigO_iff_le_and_ge]
+  constructor
+  . calc
+      _ ≤ ∑ n in discretize I, ((∫ t in (Set.Ico ((n:ℝ)-1) (n:ℝ)) ∩ I, f t ∂ volume) + if (IsLeast (discretize I) n) then (f a) else 0) := by
+        apply Finset.sum_le_sum
+        intro n hn
+        by_cases hmin : IsLeast (discretize I) n
+        . simp [hmin]
+          rw [discretize_mem hu hl] at hn
+          apply (hf (Set.left_mem_Icc.mpr h) (hI' hn) ((Set.mem_Icc.mp (hI' hn)).1)).trans
+          rw [le_add_iff_nonneg_left]
+          apply MeasureTheory.set_integral_nonneg (MeasurableSet.inter measurableSet_Ico hmes)
+          intro x hx
+          apply hf'.trans
+          simp at hx
+          exact hf (hI' hx.2) (Set.right_mem_Icc.mpr h) (Set.mem_Icc.mp (hI' hx.2)).2
+        simp [hmin]
+        replace hmin := unit_interval_subset_or_inf hu hl hn hmin
+        rw [Set.inter_eq_left.mpr hmin]
+        calc
+          _ = ∫ t in Set.Ico ((n:ℝ)-1) (n:ℝ), f n ∂ volume := by
+            simp
+          _ ≤ _ := by
+            apply MeasureTheory.set_integral_mono_on _ _ measurableSet_Ico _
+            . simp
+            . exact MeasureTheory.IntegrableOn.mono_set hinteg hmin
+            intro x hx
+            exact hf (hI' (hmin hx)) (hI' ((discretize_mem hu hl n).mp hn)) (le_of_lt hx.2)
+      _ ≤ ∑ n in discretize I, (∫ t in (Set.Ico ((n:ℝ)-1) (n:ℝ)) ∩ I, f t ∂ volume) + f a := by
+        rw [Finset.sum_add_distrib, add_le_add_iff_left, Finset.sum_ite]
+        simp
+        apply mul_le_of_le_one_left (hf'.trans (hf (Set.left_mem_Icc.mpr h) (Set.right_mem_Icc.mpr h) h))
+        norm_cast
+        rw [Finset.card_le_one]
+        intro a ha b hb
+        simp at ha hb
+        exact IsLeast.unique ha.2 hb.2
+      _ ≤ ∫ t in I, f t ∂ volume + f a := by
+        rw [add_le_add_iff_right]
+        calc
+          _ = ∫ t in ⋃ n ∈ discretize I, (Set.Ico ((n:ℝ)-1) (n:ℝ) ∩ I), f t ∂ volume := by
+            apply (MeasureTheory.integral_finset_biUnion _ _ _ _).symm
+            . intro n hn
+              exact MeasurableSet.inter measurableSet_Ico hmes
+            . apply Pairwise.set_pairwise
+              rw [pairwise_disjoint_on]
+              intro m n hmn
+              by_contra h
+              rw [Set.not_disjoint_iff] at h
+              rcases h with ⟨ x, hx, hx' ⟩
+              simp at hx hx'
+              have : (m:ℝ)+1 ≤ (n:ℝ) := by norm_cast
+              linarith only [hx.1.2, hx'.1.1, this]
+            intro n hn
+            exact MeasureTheory.IntegrableOn.mono_set hinteg (Set.inter_subset_right _ I)
+          _ ≤ _ := by
+            apply MeasureTheory.set_integral_mono_set hinteg
+            . apply Filter.eventually_of_mem (self_mem_ae_restrict hmes)
+              intro x hx
+              simp
+              exact hf'.trans (hf (hI' hx) (Set.right_mem_Icc.mpr h) (Set.mem_Icc.mp (hI' hx)).2)
+            apply HasSubset.Subset.eventuallyLE
+            simp
+      _ = _ := by simp
+  calc
+    _ ≥ ∑ n in discretize I, ∫ t in (Set.Ico (n:ℝ) ((n:ℝ)+1)), f t ∂ volume := by
+      apply Finset.sum_le_sum
+      intro n hn
+      sorry
+    _ ≥ ∑ n in discretize I, ∫ t in (Set.Ico (n:ℝ) ((n:ℝ)+1)), f t ∂ volume + ∫ t in Set.Ico a (a+1), f t ∂ volume - f a := by sorry
+    _ ≥ ∫ t in I, f t ∂ volume - f a := by sorry
+    _ = _ := by simp
+
 
 lemma sum_approx_eq_integral {a b c:ℝ} (h: a ≤ b) (f: ℝ → E)  (hderiv: ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t) (hcont': ContinuousOn (deriv f) (Set.Icc a b)) (hc: c ∈ Set.Icc a b) (I: Set ℝ) (hI: Set.Ioo a b ⊆ I) (hI': I ⊆ Set.Icc a b) : ∑ n in discretize I, f n =[1] ∫ t in I, f t ∂ volume + O( ‖f c‖ + ∫ t in I, ‖deriv f t‖ ∂ volume) := by
   let χ : ℝ → ℝ → ℤ := fun s ↦ fun x ↦ if s ≥ c then (if x ≥ s then 1 else 0) else -(if x ≤ s then 1 else 0)
