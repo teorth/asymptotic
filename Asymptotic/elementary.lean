@@ -330,13 +330,35 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
             apply HasSubset.Subset.eventuallyLE
             simp
       _ = _ := by simp
+  have {x : ℝ} (hx: x ∈ Set.Icc a b) : ∫ t in Set.Ico x (x+1) ∩ I, f t ≤ f x := calc
+    _ ≤ ∫ t in Set.Ico x (x+1) ∩ I, f x := by
+      apply MeasureTheory.set_integral_mono_on _ _ (MeasurableSet.inter measurableSet_Ico hmes) _
+      . exact MeasureTheory.IntegrableOn.mono_set hinteg (Set.inter_subset_right _ I)
+      . sorry
+      intro y hy
+      simp at hy
+      exact hf hx (hI' hy.2) hy.1.1
+    _ ≤ ∫ t in Set.Ico x (x+1), f x := by
+      apply MeasureTheory.set_integral_mono_set
+      . sorry
+      . apply Filter.eventually_of_mem (self_mem_ae_restrict measurableSet_Ico)
+        intro y hy
+        simp
+        apply hf'.trans (hf hx (Set.right_mem_Icc.mpr h) (Set.mem_Icc.mp hx).2)
+      exact HasSubset.Subset.eventuallyLE (Set.inter_subset_left _ I)
+    _ = _ := by simp
   calc
-    _ ≥ ∑ n in discretize I, ∫ t in (Set.Ico (n:ℝ) ((n:ℝ)+1)), f t ∂ volume := by
+    _ ≥ ∑ n in discretize I, ∫ t in (Set.Ico (n:ℝ) ((n:ℝ)+1) ∩ I), f t ∂ volume := by
       apply Finset.sum_le_sum
       intro n hn
+      rw [discretize_mem hu hl n] at hn
+      exact this (hI' hn)
+    _ ≥ ∑ n in discretize I, ∫ t in (Set.Ico (n:ℝ) ((n:ℝ)+1) ∩ I), f t ∂ volume + ∫ t in (Set.Ico a (a+1) ∩ I), f t ∂ volume - f a := by
+      simp
+      exact this (Set.left_mem_Icc.mpr h)
+    _ ≥ ∫ t in I, f t ∂ volume - f a := by
+      simp
       sorry
-    _ ≥ ∑ n in discretize I, ∫ t in (Set.Ico (n:ℝ) ((n:ℝ)+1)), f t ∂ volume + ∫ t in Set.Ico a (a+1), f t ∂ volume - f a := by sorry
-    _ ≥ ∫ t in I, f t ∂ volume - f a := by sorry
     _ = _ := by simp
 
 
