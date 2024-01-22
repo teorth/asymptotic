@@ -252,6 +252,57 @@ lemma unit_interval_cover {I : Set ℝ} [hI: Set.OrdConnected I]  (hu: BddAbove 
   simp
   exact ⟨ le_of_lt hy', Int.floor_le x⟩
 
+lemma integ_on_biunion_le_sum_integ {Ω: Type*} [MeasurableSpace Ω] {μ: MeasureTheory.Measure Ω} {E: Set Ω} {A: Type*} {I: Finset A} {s: A → Set Ω} {f: Ω → ℝ} (hf: MeasureTheory.IntegrableOn f E μ) (hpos: ∀ x ∈ E, f x ≥ 0) (hs: ∀ i ∈ I, MeasurableSet (s i)) (hs' : ∀ i ∈ I, s i ⊆ E): ∫ x in ⋃ i ∈ I, s i, f x ∂ μ ≤ ∑ i in I, ∫ x in s i, f x ∂ μ := calc
+  _ = ∫ x, Set.indicator (⋃ i ∈ I, s i) f x ∂ μ := by
+    rw [<-MeasureTheory.integral_indicator]
+    exact Finset.measurableSet_biUnion _ hs
+  _ ≤ ∫ x, ∑ i in I, Set.indicator (s i) f x ∂ μ := by
+    apply MeasureTheory.integral_mono
+    . apply MeasureTheory.IntegrableOn.integrable_indicator (MeasureTheory.IntegrableOn.mono_set hf _) (Finset.measurableSet_biUnion _ hs)
+      simpa
+    . apply MeasureTheory.integrable_finset_sum
+      intro i hi
+      apply MeasureTheory.IntegrableOn.integrable_indicator (MeasureTheory.IntegrableOn.mono_set hf (hs' i hi)) (hs i hi)
+    intro x
+    have hpos': ∀ j ∈ I, 0 ≤ if x ∈ s j then f x else 0 := by
+      intro j hj
+      by_cases hjs : x ∈ s j
+      . simp [hjs, hpos x ((hs' j hj) hjs)]
+      simp [hjs]
+    by_cases h : ∃ i ∈ I, x ∈ s i
+    . simp [Set.indicator, h]
+      rcases h with ⟨ i, ⟨ hi, hs ⟩ ⟩
+      convert Finset.single_le_sum hpos' hi
+      simp [hs]
+    simp [Set.indicator, h]
+    exact Finset.sum_nonneg hpos'
+  _ = ∑ i in I, ∫ x, Set.indicator (s i) f x ∂ μ := by
+    refine integral_finset_sum I ?_
+    intro i hi
+    apply MeasureTheory.IntegrableOn.integrable_indicator (MeasureTheory.IntegrableOn.mono_set hf (hs' i hi)) (hs i hi)
+  _ = _ := by
+    apply Finset.sum_congr rfl
+    intro i hi
+    rw [MeasureTheory.integral_indicator (hs i hi)]
+
+lemma integ_on_union_le_add_integ {Ω: Type*} [MeasurableSpace Ω] {μ: MeasureTheory.Measure Ω} {E: Set Ω} {s t: Set Ω} {f: Ω → ℝ} (hf: MeasureTheory.IntegrableOn f E μ) (hpos: ∀ x ∈ E, f x ≥ 0) (hs: MeasurableSet s) (ht: MeasurableSet t) (hs' : s ⊆ E) (ht' : t ⊆ E) : ∫ x in s ∪ t, f x ∂ μ ≤ ∫ x in s, f x ∂ μ + ∫ x in t, f x ∂ μ  := by
+  have hs_integ := MeasureTheory.IntegrableOn.integrable_indicator (MeasureTheory.IntegrableOn.mono_set hf hs') hs
+  have ht_integ := MeasureTheory.IntegrableOn.integrable_indicator (MeasureTheory.IntegrableOn.mono_set hf ht') ht
+  rw [<-MeasureTheory.integral_indicator hs, <-MeasureTheory.integral_indicator ht, <-MeasureTheory.integral_indicator (MeasurableSet.union hs ht), <-MeasureTheory.integral_add hs_integ ht_integ]
+  apply MeasureTheory.integral_mono
+  . apply MeasureTheory.IntegrableOn.integrable_indicator (MeasureTheory.IntegrableOn.mono_set hf (Set.union_subset hs' ht')) (MeasurableSet.union hs ht)
+  . apply MeasureTheory.Integrable.add hs_integ ht_integ
+  intro x
+  simp [Set.indicator]
+  by_cases h: x ∈ s
+  . by_cases h': x ∈ t
+    . simp [h, h', hpos x (hs' h)]
+    simp [h,h']
+  by_cases h': x ∈ t
+  . simp [h,h']
+  simp [h,h']
+
+
 lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (hf: AntitoneOn f (Set.Icc a b)) (hf': f b ≥ 0) (I: Set ℝ) (hI: Set.Ioo a b ⊆ I) (hI': I ⊆ Set.Icc a b) : ∑ n in discretize I, f n =[1] ∫ t in I, f t ∂ volume + O( f a ) := by
   have hu : BddAbove I := BddAbove.mono hI' bddAbove_Icc
   have hl : BddBelow I := BddBelow.mono hI' bddBelow_Icc
@@ -266,6 +317,9 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
     exact ⟨ lt_of_le_of_lt hx.1 hz.1, lt_of_lt_of_le hz.2 hy.2 ⟩
   have hmes: MeasurableSet I := by sorry
   have hinteg: IntegrableOn f I := by sorry
+  have hnonneg : ∀ x ∈ Set.Icc a b, f x ≥ 0 := by
+    intro x hx
+    apply hf'.trans (hf hx (Set.right_mem_Icc.mpr h) (Set.mem_Icc.mp hx).2)
   rw [eqPlusBigO_iff_le_and_ge]
   constructor
   . calc
@@ -279,9 +333,8 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
           rw [le_add_iff_nonneg_left]
           apply MeasureTheory.set_integral_nonneg (MeasurableSet.inter measurableSet_Ico hmes)
           intro x hx
-          apply hf'.trans
           simp at hx
-          exact hf (hI' hx.2) (Set.right_mem_Icc.mpr h) (Set.mem_Icc.mp (hI' hx.2)).2
+          exact hnonneg x (hI' hx.2)
         simp [hmin]
         replace hmin := unit_interval_subset_or_inf hu hl hn hmin
         rw [Set.inter_eq_left.mpr hmin]
@@ -297,7 +350,7 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
       _ ≤ ∑ n in discretize I, (∫ t in (Set.Ico ((n:ℝ)-1) (n:ℝ)) ∩ I, f t ∂ volume) + f a := by
         rw [Finset.sum_add_distrib, add_le_add_iff_left, Finset.sum_ite]
         simp
-        apply mul_le_of_le_one_left (hf'.trans (hf (Set.left_mem_Icc.mpr h) (Set.right_mem_Icc.mpr h) h))
+        apply mul_le_of_le_one_left (hnonneg a (Set.left_mem_Icc.mpr h)) _
         norm_cast
         rw [Finset.card_le_one]
         intro a ha b hb
@@ -325,8 +378,7 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
             apply MeasureTheory.set_integral_mono_set hinteg
             . apply Filter.eventually_of_mem (self_mem_ae_restrict hmes)
               intro x hx
-              simp
-              exact hf'.trans (hf (hI' hx) (Set.right_mem_Icc.mpr h) (Set.mem_Icc.mp (hI' hx)).2)
+              simp [hnonneg x (hI' hx)]
             apply HasSubset.Subset.eventuallyLE
             simp
       _ = _ := by simp
@@ -343,8 +395,7 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
       . sorry
       . apply Filter.eventually_of_mem (self_mem_ae_restrict measurableSet_Ico)
         intro y hy
-        simp
-        apply hf'.trans (hf hx (Set.right_mem_Icc.mpr h) (Set.mem_Icc.mp hx).2)
+        simp [hnonneg x hx]
       exact HasSubset.Subset.eventuallyLE (Set.inter_subset_left _ I)
     _ = _ := by simp
   calc
@@ -356,9 +407,56 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
     _ ≥ ∑ n in discretize I, ∫ t in (Set.Ico (n:ℝ) ((n:ℝ)+1) ∩ I), f t ∂ volume + ∫ t in (Set.Ico a (a+1) ∩ I), f t ∂ volume - f a := by
       simp
       exact this (Set.left_mem_Icc.mpr h)
+    _ ≥ ∫ t in (⋃ n ∈ discretize I, (Set.Ico (n:ℝ) ((n:ℝ)+1) ∩ I)), f t ∂ volume  + ∫ t in (Set.Ico a (a+1) ∩ I), f t ∂ volume - f a := by
+      simp
+      apply integ_on_biunion_le_sum_integ hinteg
+      . intro x hx
+        exact hnonneg x (hI' hx)
+      . intro i hi
+        exact MeasurableSet.inter measurableSet_Ico hmes
+      intro i hi
+      exact Set.inter_subset_right _ I
     _ ≥ ∫ t in I, f t ∂ volume - f a := by
       simp
-      sorry
+      convert integ_on_union_le_add_integ hinteg ?_ ?_ ?_ ?_ ?_
+      . ext x; constructor
+        . intro hx
+          rcases le_iff_lt_or_eq.mp h with h' | h'
+          swap
+          . have := h'.symm ▸ (hI' hx)
+            simp at this
+            simp [this]
+            right; exact this ▸ hx
+          have hglb : IsGLB I a := by
+            rw [isGLB_iff_le_iff]
+            intro y
+            constructor
+            . intro hy
+              apply lowerBounds_mono hI' hy
+              rw [lowerBounds_Icc h]
+              exact Set.right_mem_Iic
+            intro hy
+            replace hy := lowerBounds_mono hI (Eq.le rfl) hy
+            rw [lowerBounds_Ioo h'] at hy
+            exact hy
+          have := unit_interval_cover hu hl hglb hx
+          simp at this ⊢
+          rcases this with ⟨ h1, h2 ⟩ | ⟨ i, hi, hi', hi'' ⟩
+          . right; exact ⟨ ⟨ h1, h2 ⟩, hx⟩
+          left; exact ⟨ i, ⟨ ⟨ hi, hi''⟩, hi', hx ⟩ ⟩
+        simp
+        intro this
+        rcases this with ⟨ i, hi⟩ | h
+        . exact hi.2.2
+        exact h.2
+      . intro x hx
+        exact hnonneg x (hI' hx)
+      . apply Finset.measurableSet_biUnion
+        intro n hn
+        exact MeasurableSet.inter measurableSet_Ico hmes
+      . exact MeasurableSet.inter measurableSet_Ico hmes
+      . simp
+      exact Set.inter_subset_right _ I
     _ = _ := by simp
 
 
