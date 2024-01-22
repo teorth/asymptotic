@@ -7,6 +7,7 @@ import Mathlib.MeasureTheory.Integral.SetIntegral
 import Mathlib.MeasureTheory.Integral.IntervalIntegral
 import Mathlib.MeasureTheory.Integral.FundThmCalculus
 import Mathlib.Data.Set.Intervals.OrdConnected
+import Mathlib.MeasureTheory.Measure.Haar.Unique
 
 lemma Nat.floor_eqPlusBigO {x: ℝ} (hx: 0 ≤ x) : ⌊x⌋₊ =[1] x + O(1) := by
   simp [abs_le]
@@ -491,6 +492,46 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
       exact Set.inter_subset_right _ I
     _ = _ := by simp
 
+open MeasureTheory
+
+lemma sum_approx_eq_integral_monotone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (hf: MonotoneOn f (Set.Icc a b)) (hf': f a ≥ 0) (I: Set ℝ) (hI: Set.Ioo a b ⊆ I) (hI': I ⊆ Set.Icc a b) : ∑ n in discretize I, f n =[1] ∫ t in I, f t ∂ volume + O( f b ) := by
+  have hu : BddAbove I := BddAbove.mono hI' bddAbove_Icc
+  have hl : BddBelow I := BddBelow.mono hI' bddBelow_Icc
+  have hI'_neg : { x | -x ∈ I } ⊆ Set.Icc (-b) (-a) := by
+    intro x hx
+    simp at hx ⊢
+    replace hx := Set.mem_Icc.mp (hI' hx)
+    exact ⟨ neg_le.mp hx.2, le_neg.mp hx.1 ⟩
+  have hu' : BddAbove { x | -x ∈ I } := BddAbove.mono hI'_neg bddAbove_Icc
+  have hl' : BddBelow { x | -x ∈ I } := BddBelow.mono hI'_neg bddBelow_Icc
+  convert sum_approx_eq_integral_antitone (neg_le_neg h) (fun x ↦ f (-x)) ?_ ?_ { x | -x ∈ I } ?_ hI'_neg using 1
+  . congr 1
+    . convert Finset.sum_image ?_ (g := fun x ↦ -x)
+      . ext n
+        simp
+        simp_rw [discretize_mem hu hl, discretize_mem hu' hl']
+        simp
+        constructor
+        . intro hn; use -n
+          simp [hn]
+        intro this; rcases this with ⟨ a, ha, ha' ⟩
+        simp [<-ha', ha]
+      . rw [Int.cast_neg]
+      intro x _ y _
+      simp
+    convert MeasurableEmbedding.set_integral_map (μ := volume) (Homeomorph.neg ℝ).closedEmbedding.measurableEmbedding f I using 1
+    congr
+    exact (Measure.map_neg_eq_self volume).symm
+  . rw [neg_neg]
+  . intro x hx y hy hxy
+    simp at hx hy ⊢
+    apply hf _ _ (neg_le_neg hxy)
+    . exact Set.mem_Icc.mpr ⟨ le_neg.mp hy.2, neg_le.mp hy.1 ⟩
+    exact Set.mem_Icc.mpr ⟨ le_neg.mp hx.2, neg_le.mp hx.1 ⟩
+  . simp [hf']
+  intro x hx
+  simp at hx ⊢
+  exact hI (Set.mem_Ioo.mpr ⟨ lt_neg.mp hx.2, neg_lt.mp hx.1 ⟩)
 
 lemma sum_approx_eq_integral {a b c:ℝ} (h: a ≤ b) (f: ℝ → E)  (hderiv: ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t) (hcont': ContinuousOn (deriv f) (Set.Icc a b)) (hc: c ∈ Set.Icc a b) (I: Set ℝ) (hI: Set.Ioo a b ⊆ I) (hI': I ⊆ Set.Icc a b) : ∑ n in discretize I, f n =[1] ∫ t in I, f t ∂ volume + O( ‖f c‖ + ∫ t in I, ‖deriv f t‖ ∂ volume) := by
   let χ : ℝ → ℝ → ℤ := fun s ↦ fun x ↦ if s ≥ c then (if x ≥ s then 1 else 0) else -(if x ≤ s then 1 else 0)
