@@ -308,18 +308,49 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
   have hl : BddBelow I := BddBelow.mono hI' bddBelow_Icc
   have hc : Set.OrdConnected I := by
     apply Set.ordConnected_of_Ioo
-    intro x hx y hy hxy
+    intro x hx y hy _
     apply LE.le.trans _ hI
     intro z hz
     replace hx := hI' hx
     replace hy := hI' hy
     simp at hz hx hy ⊢
     exact ⟨ lt_of_le_of_lt hx.1 hz.1, lt_of_lt_of_le hz.2 hy.2 ⟩
-  have hmes: MeasurableSet I := by sorry
-  have hinteg: IntegrableOn f I := by sorry
+  have hmes: MeasurableSet I := by
+    rw [<-measurableSet_insert (a := a), <-measurableSet_insert (a := b)]
+    convert measurableSet_Icc (a := a) (b := b)
+    ext x
+    simp
+    constructor
+    . intro this
+      rcases this with this | this | this
+      . simp [this, h]
+      . simp [this, h]
+      exact Set.mem_Icc.mp (hI' this)
+    intro this
+    rcases le_iff_lt_or_eq.mp this.1 with h1 | h1
+    . rcases le_iff_lt_or_eq.mp this.2 with h2 | h2
+      . right; right; apply hI
+        simp [h1, h2]
+      simp [h2]
+    simp [h1]
   have hnonneg : ∀ x ∈ Set.Icc a b, f x ≥ 0 := by
     intro x hx
     apply hf'.trans (hf hx (Set.right_mem_Icc.mpr h) (Set.mem_Icc.mp hx).2)
+  have hinteg: IntegrableOn f I := by
+    apply MeasureTheory.IntegrableOn.mono_set _ hI'
+    rw [MeasureTheory.integrableOn_def]
+    apply MeasureTheory.Integrable.mono' (g := fun _ ↦ f a)
+    . simp
+    . rw [aestronglyMeasurable_iff_aemeasurable]
+      exact aemeasurable_restrict_of_antitoneOn measurableSet_Icc hf
+    rw [MeasureTheory.ae_restrict_iff' measurableSet_Icc]
+    apply Filter.eventually_of_forall
+    intro x hx
+    simp [abs_of_nonneg (hnonneg x hx)]
+    apply hf (Set.left_mem_Icc.mpr h) hx
+    simp at hx
+    exact hx.1
+
   rw [eqPlusBigO_iff_le_and_ge]
   constructor
   . calc
@@ -339,7 +370,7 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
         replace hmin := unit_interval_subset_or_inf hu hl hn hmin
         rw [Set.inter_eq_left.mpr hmin]
         calc
-          _ = ∫ t in Set.Ico ((n:ℝ)-1) (n:ℝ), f n ∂ volume := by
+          _ = ∫ _ in Set.Ico ((n:ℝ)-1) (n:ℝ), f n ∂ volume := by
             simp
           _ ≤ _ := by
             apply MeasureTheory.set_integral_mono_on _ _ measurableSet_Ico _
@@ -361,7 +392,7 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
         calc
           _ = ∫ t in ⋃ n ∈ discretize I, (Set.Ico ((n:ℝ)-1) (n:ℝ) ∩ I), f t ∂ volume := by
             apply (MeasureTheory.integral_finset_biUnion _ _ _ _).symm
-            . intro n hn
+            . intro n _
               exact MeasurableSet.inter measurableSet_Ico hmes
             . apply Pairwise.set_pairwise
               rw [pairwise_disjoint_on]
@@ -372,7 +403,7 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
               simp at hx hx'
               have : (m:ℝ)+1 ≤ (n:ℝ) := by norm_cast
               linarith only [hx.1.2, hx'.1.1, this]
-            intro n hn
+            intro n _
             exact MeasureTheory.IntegrableOn.mono_set hinteg (Set.inter_subset_right _ I)
           _ ≤ _ := by
             apply MeasureTheory.set_integral_mono_set hinteg
@@ -383,18 +414,19 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
             simp
       _ = _ := by simp
   have {x : ℝ} (hx: x ∈ Set.Icc a b) : ∫ t in Set.Ico x (x+1) ∩ I, f t ≤ f x := calc
-    _ ≤ ∫ t in Set.Ico x (x+1) ∩ I, f x := by
+    _ ≤ ∫ _ in Set.Ico x (x+1) ∩ I, f x := by
       apply MeasureTheory.set_integral_mono_on _ _ (MeasurableSet.inter measurableSet_Ico hmes) _
       . exact MeasureTheory.IntegrableOn.mono_set hinteg (Set.inter_subset_right _ I)
-      . sorry
+      . apply MeasureTheory.IntegrableOn.mono_set _ (Set.inter_subset_left _ _)
+        simp
       intro y hy
       simp at hy
       exact hf hx (hI' hy.2) hy.1.1
-    _ ≤ ∫ t in Set.Ico x (x+1), f x := by
+    _ ≤ ∫ _ in Set.Ico x (x+1), f x := by
       apply MeasureTheory.set_integral_mono_set
-      . sorry
+      . simp
       . apply Filter.eventually_of_mem (self_mem_ae_restrict measurableSet_Ico)
-        intro y hy
+        intro y _
         simp [hnonneg x hx]
       exact HasSubset.Subset.eventuallyLE (Set.inter_subset_left _ I)
     _ = _ := by simp
@@ -412,9 +444,9 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
       apply integ_on_biunion_le_sum_integ hinteg
       . intro x hx
         exact hnonneg x (hI' hx)
-      . intro i hi
+      . intro i _
         exact MeasurableSet.inter measurableSet_Ico hmes
-      intro i hi
+      intro i _
       exact Set.inter_subset_right _ I
     _ ≥ ∫ t in I, f t ∂ volume - f a := by
       simp
@@ -452,7 +484,7 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
       . intro x hx
         exact hnonneg x (hI' hx)
       . apply Finset.measurableSet_biUnion
-        intro n hn
+        intro n _
         exact MeasurableSet.inter measurableSet_Ico hmes
       . exact MeasurableSet.inter measurableSet_Ico hmes
       . simp
