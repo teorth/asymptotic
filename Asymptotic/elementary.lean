@@ -219,6 +219,47 @@ lemma discretize_mem {I: Set ℝ} (hu: BddAbove I) (hl: BddBelow I) (n:ℤ) : n 
   have := discretize_finite hu hl
   simp [discretize, this]
 
+@[simp]
+lemma discretize_Ico {a b:ℝ}: discretize (Set.Ico a b) = Set.Ico ⌈ a ⌉ ⌈ b ⌉ := by
+  ext n
+  simp [discretize_mem bddAbove_Ico bddBelow_Ico n]
+  constructor
+  . rintro ⟨ h1, h2 ⟩
+    exact ⟨ Int.ceil_le.mpr h1, Int.lt_ceil.mpr h2 ⟩
+  rintro ⟨ h1, h2⟩
+  exact ⟨ Int.ceil_le.mp h1, Int.lt_ceil.mp h2 ⟩
+
+@[simp]
+lemma discretize_Ioc {a b:ℝ}: discretize (Set.Ioc a b) = Set.Ioc ⌊ a ⌋ ⌊ b ⌋ := by
+  ext n
+  simp [discretize_mem bddAbove_Ioc bddBelow_Ioc n]
+  constructor
+  . rintro ⟨ h1, h2 ⟩
+    exact ⟨ Int.floor_lt.mpr h1, Int.le_floor.mpr h2 ⟩
+  rintro ⟨ h1, h2⟩
+  exact ⟨ Int.floor_lt.mp h1, Int.le_floor.mp h2 ⟩
+
+@[simp]
+lemma discretize_Icc {a b:ℝ}: discretize (Set.Icc a b) = Set.Icc ⌈ a ⌉ ⌊ b ⌋ := by
+  ext n
+  simp [discretize_mem bddAbove_Icc bddBelow_Icc n]
+  constructor
+  . rintro ⟨ h1, h2 ⟩
+    exact ⟨ Int.ceil_le.mpr h1, Int.le_floor.mpr h2 ⟩
+  rintro ⟨ h1, h2⟩
+  exact ⟨ Int.ceil_le.mp h1, Int.le_floor.mp h2 ⟩
+
+@[simp]
+lemma discretize_Ioo {a b:ℝ}: discretize (Set.Ioo a b) = Set.Ioo ⌊ a ⌋ ⌈ b ⌉ := by
+  ext n
+  simp [discretize_mem bddAbove_Ioo bddBelow_Ioo n]
+  constructor
+  . rintro ⟨ h1, h2 ⟩
+    exact ⟨ Int.floor_lt.mpr h1, Int.lt_ceil.mpr h2 ⟩
+  rintro ⟨ h1, h2⟩
+  exact ⟨ Int.floor_lt.mp h1, Int.lt_ceil.mp h2 ⟩
+
+
 lemma unit_interval_subset_or_inf {I : Set ℝ} [hI: Set.OrdConnected I]  (hu: BddAbove I) (hl: BddBelow I) {n : ℤ} (hn: n ∈ discretize I) (hsub: ¬ IsLeast (discretize I) n) : Set.Ico ((n:ℝ)-1) (n:ℝ) ⊆ I := by
   contrapose! hsub
   rcases Set.not_subset.mp hsub with ⟨ x, ⟨ hx1, hx2 ⟩ ⟩
@@ -491,8 +532,6 @@ lemma sum_approx_eq_integral_antitone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
       . simp
       exact Set.inter_subset_right _ I
     _ = _ := by simp
-
-open MeasureTheory
 
 lemma sum_approx_eq_integral_monotone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (hf: MonotoneOn f (Set.Icc a b)) (hf': f a ≥ 0) (I: Set ℝ) (hI: Set.Ioo a b ⊆ I) (hI': I ⊆ Set.Icc a b) : ∑ n in discretize I, f n =[1] ∫ t in I, f t ∂ volume + O( f b ) := by
   have hu : BddAbove I := BddAbove.mono hI' bddAbove_Icc
