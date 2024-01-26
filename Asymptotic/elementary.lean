@@ -8,6 +8,7 @@ import Mathlib.MeasureTheory.Integral.IntervalIntegral
 import Mathlib.MeasureTheory.Integral.FundThmCalculus
 import Mathlib.Data.Set.Intervals.OrdConnected
 import Mathlib.MeasureTheory.Measure.Haar.Unique
+import Mathlib.Init.Data.Int.CompLemmas
 
 lemma Nat.floor_eqPlusBigO {x: ℝ} (hx: 0 ≤ x) : ⌊x⌋₊ =[1] x + O(1) := by
   simp [abs_le]
@@ -259,6 +260,75 @@ lemma discretize_Ioo {a b:ℝ}: discretize (Set.Ioo a b) = Set.Ioo ⌊ a ⌋ ⌈
   rintro ⟨ h1, h2⟩
   exact ⟨ Int.floor_lt.mp h1, Int.lt_ceil.mp h2 ⟩
 
+/-- These are superseded by Nat.image_cast_int_Ico etc. -/
+lemma ico_Int_ofNat_eq_Int_ofNat_ico (a b:ℕ) : Set.Ico (a:ℤ) (b:ℤ) = Nat.cast '' (Set.Ico a b):= by
+  ext x
+  simp
+  constructor
+  . rintro ⟨ ha, hb ⟩
+    rcases Int.eq_ofNat_of_zero_le ((Int.zero_le_ofNat a).trans ha) with ⟨ n, rfl ⟩
+    norm_cast at ha hb
+    use n
+  rintro ⟨ n, ⟨ ha, hb⟩, rfl ⟩
+  norm_cast
+
+lemma icc_Int_ofNat_eq_Int_ofNat_icc (a b:ℕ) : Set.Icc (a:ℤ) (b:ℤ) = Nat.cast '' (Set.Icc a b) := by
+  ext x
+  simp
+  constructor
+  . rintro ⟨ ha, hb ⟩
+    rcases Int.eq_ofNat_of_zero_le ((Int.zero_le_ofNat a).trans ha) with ⟨ n, rfl ⟩
+    norm_cast at ha hb
+    use n
+  rintro ⟨ n, ⟨ ha, hb⟩, rfl ⟩
+  norm_cast
+
+lemma ioc_Int_ofNat_eq_Int_ofNat_ioc (a b:ℕ) : Set.Ioc (a:ℤ) (b:ℤ) = Nat.cast '' (Set.Ioc a b) := by
+  ext x
+  simp
+  constructor
+  . rintro ⟨ ha, hb ⟩
+    rcases Int.eq_ofNat_of_zero_le ((Int.zero_le_ofNat a).trans (le_of_lt ha)) with ⟨ n, rfl ⟩
+    norm_cast at ha hb
+    use n
+  rintro ⟨ n, ⟨ ha, hb⟩, rfl ⟩
+  norm_cast
+
+lemma ioo_Int_ofNat_eq_Int_ofNat_ioo (a b:ℕ) : Set.Ioo (a:ℤ) (b:ℤ) = Nat.cast '' (Set.Ioo a b) := by
+  ext x
+  simp
+  constructor
+  . rintro ⟨ ha, hb ⟩
+    rcases Int.eq_ofNat_of_zero_le ((Int.zero_le_ofNat a).trans (le_of_lt ha)) with ⟨ n, rfl ⟩
+    norm_cast at ha hb
+    use n
+  rintro ⟨ n, ⟨ ha, hb⟩, rfl ⟩
+  norm_cast
+
+lemma ici_Int_ofNat_eq_Int_ofNat_ici (a:ℕ) : Set.Ici (a:ℤ) = Nat.cast '' (Set.Ici a) := by
+  ext x
+  simp
+  constructor
+  . rintro ha
+    rcases Int.eq_ofNat_of_zero_le ((Int.zero_le_ofNat a).trans ha) with ⟨ n, rfl ⟩
+    norm_cast at ha
+    use n
+  rintro ⟨ n, ha, rfl ⟩
+  norm_cast
+
+lemma ioi_Int_ofNat_eq_Int_ofNat_ioi (a:ℕ) : Set.Ioi (a:ℤ) = Nat.cast '' (Set.Ioi a) := by
+  ext x
+  simp
+  constructor
+  . rintro ha
+    rcases Int.eq_ofNat_of_zero_le ((Int.zero_le_ofNat a).trans (le_of_lt ha)) with ⟨ n, rfl ⟩
+    norm_cast at ha
+    use n
+  rintro ⟨ n, ha, rfl ⟩
+  norm_cast
+
+lemma discretize_Ico_nonneg {a b:ℝ} (ha: 0 ≤ a) (hb: 0 ≤ b): discretize (Set.Ico a b) = (Nat.cast : ℕ → ℤ) '' (Set.Ico ⌈ a ⌉₊ ⌈ b ⌉₊) := by
+  rw [discretize_Ico, <-ico_Int_ofNat_eq_Int_ofNat_ico, Nat.cast_ceil_eq_int_ceil ha, Nat.cast_ceil_eq_int_ceil hb]
 
 lemma unit_interval_subset_or_inf {I : Set ℝ} [hI: Set.OrdConnected I]  (hu: BddAbove I) (hl: BddBelow I) {n : ℤ} (hn: n ∈ discretize I) (hsub: ¬ IsLeast (discretize I) n) : Set.Ico ((n:ℝ)-1) (n:ℝ) ⊆ I := by
   contrapose! hsub
@@ -572,6 +642,8 @@ lemma sum_approx_eq_integral_monotone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
   simp at hx ⊢
   exact hI (Set.mem_Ioo.mpr ⟨ lt_neg.mp hx.2, neg_lt.mp hx.1 ⟩)
 
+
+
 lemma sum_approx_eq_integral {a b c:ℝ} (h: a ≤ b) (f: ℝ → E)  (hderiv: ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t) (hcont': ContinuousOn (deriv f) (Set.Icc a b)) (hc: c ∈ Set.Icc a b) (I: Set ℝ) (hI: Set.Ioo a b ⊆ I) (hI': I ⊆ Set.Icc a b) : ∑ n in discretize I, f n =[1] ∫ t in I, f t ∂ volume + O( ‖f c‖ + ∫ t in I, ‖deriv f t‖ ∂ volume) := by
   let χ : ℝ → ℝ → ℤ := fun s ↦ fun x ↦ if s ≥ c then (if x ≥ s then 1 else 0) else -(if x ≤ s then 1 else 0)
   have repr : ∀ x ∈ Set.Icc a b, f x = f c + ∫ s in Set.Icc a b, (χ s x) • deriv f s ∂ volume := ftoc f hderiv hcont' hc
@@ -583,3 +655,20 @@ lemma sum_approx_eq_integral {a b c:ℝ} (h: a ≤ b) (f: ℝ → E)  (hderiv: �
   apply add_of_eqPlusBigO _ _
   . sorry
   sorry
+
+
+lemma sum_approx_eq_integral_antitone_nat {a b:ℝ} (h0: 0 ≤ a) (h: a ≤ b) (f: ℝ → ℝ) (hf: AntitoneOn f (Set.Icc a b)) (hf': f b ≥ 0) : ∑ n in Finset.Ico ⌈ a ⌉₊ ⌈ b ⌉₊, f n =[1] ∫ t in Set.Ico a b, f t ∂ volume + O( f a ) := by
+  convert sum_approx_eq_integral_antitone h f hf hf' (Set.Ico a b) Set.Ioo_subset_Ico_self Set.Ico_subset_Icc_self
+  change ∑ n in Finset.Ico ⌈ a ⌉₊ ⌈ b ⌉₊, f (n:ℤ) = ∑ n in discretize (Set.Ico a b), f ↑n
+  rw [<-Finset.sum_image (g := fun n:ℕ ↦ (n:ℤ)) (f := fun n:ℤ ↦ f n)]
+  congr
+  rw [<-Finset.coe_inj,discretize_Ico_nonneg h0 (h0.trans h), Finset.coe_image, Finset.coe_Ico]
+  simp
+
+lemma sum_approx_eq_integral_monotone_nat {a b:ℝ} (h0: 0 ≤ a) (h: a ≤ b) (f: ℝ → ℝ) (hf: MonotoneOn f (Set.Icc a b)) (hf': f a ≥ 0) : ∑ n in Finset.Ico ⌈ a ⌉₊ ⌈ b ⌉₊, f n =[1] ∫ t in Set.Ico a b, f t ∂ volume + O( f b ) := by
+  convert sum_approx_eq_integral_monotone h f hf hf' (Set.Ico a b) Set.Ioo_subset_Ico_self Set.Ico_subset_Icc_self
+  change ∑ n in Finset.Ico ⌈ a ⌉₊ ⌈ b ⌉₊, f (n:ℤ) = ∑ n in discretize (Set.Ico a b), f ↑n
+  rw [<-Finset.sum_image (g := fun n:ℕ ↦ (n:ℤ)) (f := fun n:ℤ ↦ f n)]
+  congr
+  rw [<-Finset.coe_inj,discretize_Ico_nonneg h0 (h0.trans h), Finset.coe_image, Finset.coe_Ico]
+  simp
