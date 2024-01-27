@@ -58,54 +58,31 @@ lemma coe_of_sub_of_nat_eq (a b: ℕ) : (a-b:ℕ) = max 0 (a-b:ℝ) := by
   split <;>
   omega
 
-lemma coe_of_int_toNat_eq  (a:ℤ) : Int.toNat a = max (0:ℝ) a := by
+@[simp]
+lemma coe_of_int_toNat_eq  (a:ℤ) : Int.toNat a = max (0:ℤ) a := by
   norm_cast
   rw [max_comm]
   exact Int.toNat_eq_max a
 
-def ℤᵣ : Set ℝ := Set.range fun (n:ℤ) ↦ (n:ℝ)
+@[simp]
+lemma coe_of_int_toNat_eq'  (a:ℤ) : Int.toNat a = max (0:ℝ) a := by
+  norm_cast
+  rw [max_comm]
+  exact Int.toNat_eq_max a
 
-lemma interval_count {a b: ℝ} (h: a ≤ b) (I: Set ℝ) (hI: Set.Ioo a b ⊆ I) (hI': I ⊆ Set.Icc a b) : Nat.card (I ∩ ℤᵣ : Set ℝ) =[1] b-a + O(1) := by
-  set ι := fun (n:ℤ) ↦ (n:ℝ)
+lemma interval_count {a b: ℝ} (h: a ≤ b) (I: Set ℝ) (hI: Set.Ioo a b ⊆ I) (hI': I ⊆ Set.Icc a b) : Finset.card I.discretize =[1] b-a + O(1) := by
   rw [Asymptotics.eqPlusBigO_iff_le_and_ge, mul_one]
-  have hi : I ∩ ℤᵣ ⊆ ι '' (Set.Ioo (⌈a⌉-1) (⌊b⌋+1)) := by
-    intro x hx
-    simp at hx ⊢
-    rcases hx.2 with ⟨n, rfl⟩
-    refine ⟨ n, ⟨ ?_, rfl ⟩ ⟩
-    replace hx := hI' hx.1
-    simp at hx
-    constructor
-    . replace hx := lt_of_lt_of_le (sub_lt_iff_lt_add.mpr (Int.ceil_lt_add_one a)) hx.1
-      norm_cast at hx
-    replace hx := lt_of_le_of_lt hx.2 (Int.lt_floor_add_one b)
-    norm_cast at hx
-  have hfin' : Set.Finite (ι '' (Set.Ioo (⌈a⌉-1) (⌊b⌋+1))) := Set.Finite.image _ (Set.finite_Ioo _ _)
-  have hfin : Set.Finite (I ∩ ℤᵣ) := Set.Finite.subset hfin' hi
   constructor
-  . apply (Nat.cast_le.mpr (Nat.card_mono hfin' hi)).trans
-    rw [Nat.card_image_of_injective Int.cast_injective _]
+  . apply (Nat.cast_le.mpr (Finset.card_mono (Set.discretize_mono hI' (OrdBounded.icc a b)))).trans
     simp
-    rw [coe_of_sub_of_nat_eq, max_le_iff]
     constructor
-    . linarith only [h]
-    rw [sub_le_iff_le_add, coe_of_int_toNat_eq , max_le_iff]
-    constructor
-    . linarith only [h]
-    push_cast
-    linarith only [Int.floor_le b, Int.le_ceil a]
-  have : ι '' (Set.Icc (⌊a⌋+1) (⌈b⌉-1)) ⊆ I := by
-     apply subset_trans _ hI
-     simp
-     intro n hn
-     simp at hn ⊢
-     exact ⟨ by linarith only [hn.1], by linarith only [hn.2] ⟩
-  replace this : ι '' Set.Icc (⌊a⌋ + 1) (⌈b⌉ - 1) ⊆ I ∩ ℤᵣ := Set.subset_inter this (Set.image_subset_range _ _)
-  apply LE.le.trans _ (Nat.cast_le.mpr (Nat.card_mono hfin this))
-  rw [Nat.card_image_of_injective Int.cast_injective _]
-  simp [coe_of_int_toNat_eq ]
-  right
-  linarith only [Int.floor_le a, Int.le_ceil b]
+    all_goals linarith only [h, Int.le_ceil a, Int.floor_le b]
+  apply le_trans _ <| Nat.cast_le.mpr  <| Finset.card_mono <| Set.discretize_mono hI <| ordBounded_of_subset_of_icc hI'
+  simp [coe_of_sub_of_nat_eq]
+  right; right
+  linarith only [ Int.le_ceil b, Int.floor_le a]
+
+
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
 

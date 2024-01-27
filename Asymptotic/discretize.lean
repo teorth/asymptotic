@@ -7,40 +7,47 @@ import Mathlib.Order.Bounds.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.Order.Floor
 import Mathlib.Data.Real.Archimedean
+import Mathlib.Topology.Bornology.Basic
+import Mathlib.Topology.Instances.Real
 
 section ordBounded
 
 variable {α : Type*} [Preorder α]
 
-def OrdBounded (s : Set α) := (BddAbove s) ∧ (BddBelow s)
+def OrdBounded (s : Set α) := (BddBelow s) ∧ (BddAbove s)
 
 lemma OrdBounded.mono ⦃s : Set α⦄ ⦃t : Set α⦄ (h : s ⊆ t) :
 OrdBounded t → OrdBounded s := by
   intro hb
-  exact ⟨ BddAbove.mono h hb.1, BddBelow.mono h hb.2 ⟩
+  exact ⟨ BddBelow.mono h hb.1, BddAbove.mono h hb.2 ⟩
 
 @[simp]
-lemma OrdBounded.icc (a b:α) : OrdBounded (Set.Icc a b) := ⟨ bddAbove_Icc, bddBelow_Icc ⟩
+lemma OrdBounded.icc (a b:α) : OrdBounded (Set.Icc a b) := ⟨ bddBelow_Icc, bddAbove_Icc ⟩
 
 @[simp]
-lemma OrdBounded.ico (a b:α) : OrdBounded (Set.Ico a b) := ⟨ bddAbove_Ico, bddBelow_Ico ⟩
+lemma OrdBounded.ico (a b:α) : OrdBounded (Set.Ico a b) := ⟨ bddBelow_Ico, bddAbove_Ico ⟩
 
 @[simp]
-lemma OrdBounded.ioc (a b:α) : OrdBounded (Set.Ioc a b) := ⟨ bddAbove_Ioc, bddBelow_Ioc ⟩
+lemma OrdBounded.ioc (a b:α) : OrdBounded (Set.Ioc a b) := ⟨ bddBelow_Ioc, bddAbove_Ioc ⟩
 
 @[simp]
-lemma OrdBounded.ioo (a b:α) : OrdBounded (Set.Ioo a b) := ⟨ bddAbove_Ioo, bddBelow_Ioo ⟩
+lemma OrdBounded.ioo (a b:α) : OrdBounded (Set.Ioo a b) := ⟨ bddBelow_Ioo, bddAbove_Ioo ⟩
+
+lemma ordBounded_of_subset_of_icc {α : Type*} [Preorder α] {s : Set α} {a b:α} (h: s ⊆ Set.Icc a b) : OrdBounded s := OrdBounded.mono h (OrdBounded.icc a b)
 
 lemma ordBounded_def {α : Type*} [Preorder α] {s : Set α} : OrdBounded s ↔ (∃ a b, s ⊆ Set.Icc a b) := by
   constructor
   . intro h
-    rcases bddAbove_def.mp h.1 with ⟨ b, hb ⟩
-    rcases bddBelow_def.mp h.2 with ⟨ a, ha ⟩
+    rcases bddBelow_def.mp h.1 with ⟨ a, ha ⟩
+    rcases bddAbove_def.mp h.2 with ⟨ b, hb ⟩
     use a, b
     intro y hy
     simp [ha y hy, hb y hy]
   rintro ⟨ a, b, h ⟩
-  exact OrdBounded.mono h (OrdBounded.icc a b)
+  exact ordBounded_of_subset_of_icc h
+
+lemma ordBounded_iff_bounded {s: Set ℝ} : OrdBounded s ↔  Bornology.IsBounded s := Real.isBounded_iff_bddBelow_bddAbove.symm
+
 
 
 end ordBounded
