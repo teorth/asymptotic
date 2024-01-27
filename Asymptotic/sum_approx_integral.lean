@@ -1,4 +1,5 @@
 import Asymptotic.majorize
+import Asymptotic.discretize
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 import Mathlib.Data.Set.Card
 import Mathlib.MeasureTheory.Integral.Bochner
@@ -9,6 +10,9 @@ import Mathlib.MeasureTheory.Integral.FundThmCalculus
 import Mathlib.Data.Set.Intervals.OrdConnected
 import Mathlib.MeasureTheory.Measure.Haar.Unique
 import Mathlib.Init.Data.Int.CompLemmas
+
+-- Tools for comparing a sum with an integral.
+
 
 lemma Nat.floor_eqPlusBigO {x: ℝ} (hx: 0 ≤ x) : ⌊x⌋₊ =[1] x + O(1) := by
   simp [abs_le]
@@ -262,70 +266,22 @@ lemma discretize_Ioo {a b:ℝ}: discretize (Set.Ioo a b) = Set.Ioo ⌊ a ⌋ ⌈
 
 /-- These are superseded by Nat.image_cast_int_Ico etc. in sufficiently recent versions of Mathlib -/
 lemma ico_Int_ofNat_eq_Int_ofNat_ico (a b:ℕ) : Set.Ico (a:ℤ) (b:ℤ) = Nat.cast '' (Set.Ico a b):= by
-  ext x
   simp
-  constructor
-  . rintro ⟨ ha, hb ⟩
-    rcases Int.eq_ofNat_of_zero_le ((Int.zero_le_ofNat a).trans ha) with ⟨ n, rfl ⟩
-    norm_cast at ha hb
-    use n
-  rintro ⟨ n, ⟨ ha, hb⟩, rfl ⟩
-  norm_cast
 
 lemma icc_Int_ofNat_eq_Int_ofNat_icc (a b:ℕ) : Set.Icc (a:ℤ) (b:ℤ) = Nat.cast '' (Set.Icc a b) := by
-  ext x
   simp
-  constructor
-  . rintro ⟨ ha, hb ⟩
-    rcases Int.eq_ofNat_of_zero_le ((Int.zero_le_ofNat a).trans ha) with ⟨ n, rfl ⟩
-    norm_cast at ha hb
-    use n
-  rintro ⟨ n, ⟨ ha, hb⟩, rfl ⟩
-  norm_cast
 
 lemma ioc_Int_ofNat_eq_Int_ofNat_ioc (a b:ℕ) : Set.Ioc (a:ℤ) (b:ℤ) = Nat.cast '' (Set.Ioc a b) := by
-  ext x
   simp
-  constructor
-  . rintro ⟨ ha, hb ⟩
-    rcases Int.eq_ofNat_of_zero_le ((Int.zero_le_ofNat a).trans (le_of_lt ha)) with ⟨ n, rfl ⟩
-    norm_cast at ha hb
-    use n
-  rintro ⟨ n, ⟨ ha, hb⟩, rfl ⟩
-  norm_cast
 
 lemma ioo_Int_ofNat_eq_Int_ofNat_ioo (a b:ℕ) : Set.Ioo (a:ℤ) (b:ℤ) = Nat.cast '' (Set.Ioo a b) := by
-  ext x
   simp
-  constructor
-  . rintro ⟨ ha, hb ⟩
-    rcases Int.eq_ofNat_of_zero_le ((Int.zero_le_ofNat a).trans (le_of_lt ha)) with ⟨ n, rfl ⟩
-    norm_cast at ha hb
-    use n
-  rintro ⟨ n, ⟨ ha, hb⟩, rfl ⟩
-  norm_cast
 
 lemma ici_Int_ofNat_eq_Int_ofNat_ici (a:ℕ) : Set.Ici (a:ℤ) = Nat.cast '' (Set.Ici a) := by
-  ext x
   simp
-  constructor
-  . rintro ha
-    rcases Int.eq_ofNat_of_zero_le ((Int.zero_le_ofNat a).trans ha) with ⟨ n, rfl ⟩
-    norm_cast at ha
-    use n
-  rintro ⟨ n, ha, rfl ⟩
-  norm_cast
 
 lemma ioi_Int_ofNat_eq_Int_ofNat_ioi (a:ℕ) : Set.Ioi (a:ℤ) = Nat.cast '' (Set.Ioi a) := by
-  ext x
   simp
-  constructor
-  . rintro ha
-    rcases Int.eq_ofNat_of_zero_le ((Int.zero_le_ofNat a).trans (le_of_lt ha)) with ⟨ n, rfl ⟩
-    norm_cast at ha
-    use n
-  rintro ⟨ n, ha, rfl ⟩
-  norm_cast
 
 lemma discretize_Ico_nonneg {a b:ℝ} (ha: 0 ≤ a) (hb: 0 ≤ b): discretize (Set.Ico a b) = (Nat.cast : ℕ → ℤ) '' (Set.Ico ⌈ a ⌉₊ ⌈ b ⌉₊) := by
   rw [discretize_Ico, <-ico_Int_ofNat_eq_Int_ofNat_ico, Nat.cast_ceil_eq_int_ceil ha, Nat.cast_ceil_eq_int_ceil hb]
