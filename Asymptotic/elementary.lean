@@ -260,7 +260,7 @@ lemma discretize_Ioo {a b:ℝ}: discretize (Set.Ioo a b) = Set.Ioo ⌊ a ⌋ ⌈
   rintro ⟨ h1, h2⟩
   exact ⟨ Int.floor_lt.mp h1, Int.lt_ceil.mp h2 ⟩
 
-/-- These are superseded by Nat.image_cast_int_Ico etc. -/
+/-- These are superseded by Nat.image_cast_int_Ico etc. in sufficiently recent versions of Mathlib -/
 lemma ico_Int_ofNat_eq_Int_ofNat_ico (a b:ℕ) : Set.Ico (a:ℤ) (b:ℤ) = Nat.cast '' (Set.Ico a b):= by
   ext x
   simp
@@ -329,6 +329,17 @@ lemma ioi_Int_ofNat_eq_Int_ofNat_ioi (a:ℕ) : Set.Ioi (a:ℤ) = Nat.cast '' (Se
 
 lemma discretize_Ico_nonneg {a b:ℝ} (ha: 0 ≤ a) (hb: 0 ≤ b): discretize (Set.Ico a b) = (Nat.cast : ℕ → ℤ) '' (Set.Ico ⌈ a ⌉₊ ⌈ b ⌉₊) := by
   rw [discretize_Ico, <-ico_Int_ofNat_eq_Int_ofNat_ico, Nat.cast_ceil_eq_int_ceil ha, Nat.cast_ceil_eq_int_ceil hb]
+
+  lemma discretize_Icc_nonneg {a b:ℝ} (ha: 0 ≤ a) (hb: 0 ≤ b): discretize (Set.Icc a b) = (Nat.cast : ℕ → ℤ) '' (Set.Icc ⌈ a ⌉₊ ⌊ b ⌋₊) := by
+  rw [discretize_Icc, <-icc_Int_ofNat_eq_Int_ofNat_icc, Nat.cast_ceil_eq_int_ceil ha, Nat.cast_floor_eq_int_floor hb]
+
+lemma discretize_Ioc_nonneg {a b:ℝ} (ha: 0 ≤ a) (hb: 0 ≤ b): discretize (Set.Ioc a b) = (Nat.cast : ℕ → ℤ) '' (Set.Ioc ⌊ a ⌋₊ ⌊ b ⌋₊) := by
+  rw [discretize_Ioc, <-ioc_Int_ofNat_eq_Int_ofNat_ioc, Nat.cast_floor_eq_int_floor ha, Nat.cast_floor_eq_int_floor hb]
+
+lemma discretize_Ioo_nonneg {a b:ℝ} (ha: 0 ≤ a) (hb: 0 ≤ b): discretize (Set.Ioo a b) = (Nat.cast : ℕ → ℤ) '' (Set.Ioo ⌊ a ⌋₊ ⌈ b ⌉₊) := by
+  rw [discretize_Ioo, <-ioo_Int_ofNat_eq_Int_ofNat_ioo, Nat.cast_floor_eq_int_floor ha, Nat.cast_ceil_eq_int_ceil hb]
+
+
 
 lemma unit_interval_subset_or_inf {I : Set ℝ} [hI: Set.OrdConnected I]  (hu: BddAbove I) (hl: BddBelow I) {n : ℤ} (hn: n ∈ discretize I) (hsub: ¬ IsLeast (discretize I) n) : Set.Ico ((n:ℝ)-1) (n:ℝ) ⊆ I := by
   contrapose! hsub
@@ -643,12 +654,57 @@ lemma sum_approx_eq_integral_monotone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
   exact hI (Set.mem_Ioo.mpr ⟨ lt_neg.mp hx.2, neg_lt.mp hx.1 ⟩)
 
 
-
 lemma sum_approx_eq_integral {a b c:ℝ} (h: a ≤ b) (f: ℝ → E)  (hderiv: ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t) (hcont': ContinuousOn (deriv f) (Set.Icc a b)) (hc: c ∈ Set.Icc a b) (I: Set ℝ) (hI: Set.Ioo a b ⊆ I) (hI': I ⊆ Set.Icc a b) : ∑ n in discretize I, f n =[1] ∫ t in I, f t ∂ volume + O( ‖f c‖ + ∫ t in I, ‖deriv f t‖ ∂ volume) := by
+  have hu : BddAbove I := BddAbove.mono hI' bddAbove_Icc
+  have hl : BddBelow I := BddBelow.mono hI' bddBelow_Icc
   let χ : ℝ → ℝ → ℤ := fun s ↦ fun x ↦ if s ≥ c then (if x ≥ s then 1 else 0) else -(if x ≤ s then 1 else 0)
   have repr : ∀ x ∈ Set.Icc a b, f x = f c + ∫ s in Set.Icc a b, (χ s x) • deriv f s ∂ volume := ftoc f hderiv hcont' hc
   have split_lhs : ∑ n in discretize I, f n = ∑ n in discretize I, f c + ∫ s in Set.Icc a b, ∑ n in discretize I, (χ s n) • deriv f s := by
-    sorry
+    rw [integral_finset_sum, <-Finset.sum_add_distrib]
+    . apply Finset.sum_congr rfl
+      intro n hn
+      exact repr n (hI' ((discretize_mem hu hl n).mp hn))
+    intro n hn
+    convert_to Integrable (μ := Measure.restrict volume (Set.Icc a b)) fun s ↦ (χ s n:ℝ) • (deriv f s)
+    . ext s
+      exact zsmul_eq_smul_cast ℝ (χ s ↑n) (deriv f s)
+    rw [<-integrableOn_def]
+    apply IntegrableOn.smul_continuousOn _ hcont' isCompact_Icc
+    rcases le_or_gt c n with h | h
+    . have : (fun x ↦ (χ x n:ℝ)) = Set.indicator (Set.Icc c n) 1 := by
+        ext x
+        simp [χ, Set.indicator]
+        by_cases h' : c ≤ x
+        . simp [h']
+        simp [h']
+        contrapose! h'
+        exact h.trans h'
+      rw [this]
+      apply MeasureTheory.IntegrableOn.indicator _ measurableSet_Icc
+      convert_to IntegrableOn (fun _ ↦ (1:ℝ)) (Set.Icc a b)
+      rw [MeasureTheory.integrableOn_const]
+      simp
+    have : (fun x ↦ (χ x n:ℝ)) = Set.indicator (Set.Ico (n:ℝ) c) (-1) := by
+      ext x
+      simp [χ, Set.indicator]
+      by_cases h' : x ≤ n
+      . have : ¬ c ≤ x := by
+          contrapose! h'
+          exact lt_of_lt_of_le h h'
+        simp [h', this, not_le.mp this]
+        by_cases h'': n ≤ x
+        all_goals simp [h'']
+      simp [h']
+      rcases le_or_gt c x with h'' | h''
+      . simp [h'', not_lt.mpr h'']
+      simp [h'',not_le.mpr h'']
+      by_cases h'': n ≤ x
+      all_goals simp [h'']
+    rw [this]
+    apply MeasureTheory.IntegrableOn.indicator _ measurableSet_Ico
+    convert_to IntegrableOn (fun _ ↦ (-1:ℝ)) (Set.Icc a b)
+    rw [MeasureTheory.integrableOn_const]
+    simp
   have split_rhs : ∫ t in I, f t ∂ volume = ∫ t in I, f c ∂ volume + ∫ s in Set.Icc a b, (∫ t in I, (χ s t) • deriv f s ∂ volume) ∂ volume := by
     sorry
   rw [split_lhs, split_rhs]
@@ -657,7 +713,7 @@ lemma sum_approx_eq_integral {a b c:ℝ} (h: a ≤ b) (f: ℝ → E)  (hderiv: �
   sorry
 
 
-lemma sum_approx_eq_integral_antitone_nat {a b:ℝ} (h0: 0 ≤ a) (h: a ≤ b) (f: ℝ → ℝ) (hf: AntitoneOn f (Set.Icc a b)) (hf': f b ≥ 0) : ∑ n in Finset.Ico ⌈ a ⌉₊ ⌈ b ⌉₊, f n =[1] ∫ t in Set.Ico a b, f t ∂ volume + O( f a ) := by
+lemma sum_approx_eq_integral_antitone_nat_ico {a b:ℝ} (h0: 0 ≤ a) (h: a ≤ b) (f: ℝ → ℝ) (hf: AntitoneOn f (Set.Icc a b)) (hf': f b ≥ 0) : ∑ n in Finset.Ico ⌈ a ⌉₊ ⌈ b ⌉₊, f n =[1] ∫ t in Set.Ico a b, f t ∂ volume + O( f a ) := by
   convert sum_approx_eq_integral_antitone h f hf hf' (Set.Ico a b) Set.Ioo_subset_Ico_self Set.Ico_subset_Icc_self
   change ∑ n in Finset.Ico ⌈ a ⌉₊ ⌈ b ⌉₊, f (n:ℤ) = ∑ n in discretize (Set.Ico a b), f ↑n
   rw [<-Finset.sum_image (g := fun n:ℕ ↦ (n:ℤ)) (f := fun n:ℤ ↦ f n)]
@@ -665,10 +721,26 @@ lemma sum_approx_eq_integral_antitone_nat {a b:ℝ} (h0: 0 ≤ a) (h: a ≤ b) (
   rw [<-Finset.coe_inj,discretize_Ico_nonneg h0 (h0.trans h), Finset.coe_image, Finset.coe_Ico]
   simp
 
-lemma sum_approx_eq_integral_monotone_nat {a b:ℝ} (h0: 0 ≤ a) (h: a ≤ b) (f: ℝ → ℝ) (hf: MonotoneOn f (Set.Icc a b)) (hf': f a ≥ 0) : ∑ n in Finset.Ico ⌈ a ⌉₊ ⌈ b ⌉₊, f n =[1] ∫ t in Set.Ico a b, f t ∂ volume + O( f b ) := by
+lemma sum_approx_eq_integral_monotone_nat_ico {a b:ℝ} (h0: 0 ≤ a) (h: a ≤ b) (f: ℝ → ℝ) (hf: MonotoneOn f (Set.Icc a b)) (hf': f a ≥ 0) : ∑ n in Finset.Ico ⌈ a ⌉₊ ⌈ b ⌉₊, f n =[1] ∫ t in Set.Ico a b, f t ∂ volume + O( f b ) := by
   convert sum_approx_eq_integral_monotone h f hf hf' (Set.Ico a b) Set.Ioo_subset_Ico_self Set.Ico_subset_Icc_self
   change ∑ n in Finset.Ico ⌈ a ⌉₊ ⌈ b ⌉₊, f (n:ℤ) = ∑ n in discretize (Set.Ico a b), f ↑n
   rw [<-Finset.sum_image (g := fun n:ℕ ↦ (n:ℤ)) (f := fun n:ℤ ↦ f n)]
   congr
   rw [<-Finset.coe_inj,discretize_Ico_nonneg h0 (h0.trans h), Finset.coe_image, Finset.coe_Ico]
+  simp
+
+lemma sum_approx_eq_integral_antitone_nat_icc {a b:ℝ} (h0: 0 ≤ a) (h: a ≤ b) (f: ℝ → ℝ) (hf: AntitoneOn f (Set.Icc a b)) (hf': f b ≥ 0) : ∑ n in Finset.Icc ⌈ a ⌉₊ ⌊ b ⌋₊, f n =[1] ∫ t in Set.Icc a b, f t ∂ volume + O( f a ) := by
+  convert sum_approx_eq_integral_antitone h f hf hf' (Set.Icc a b) Set.Ioo_subset_Icc_self (Eq.subset rfl)
+  change ∑ n in Finset.Icc ⌈ a ⌉₊ ⌊ b ⌋₊, f (n:ℤ) = ∑ n in discretize (Set.Icc a b), f ↑n
+  rw [<-Finset.sum_image (g := fun n:ℕ ↦ (n:ℤ)) (f := fun n:ℤ ↦ f n)]
+  congr
+  rw [<-Finset.coe_inj,discretize_Icc_nonneg h0 (h0.trans h), Finset.coe_image, Finset.coe_Icc]
+  simp
+
+lemma sum_approx_eq_integral_monotone_nat_icc {a b:ℝ} (h0: 0 ≤ a) (h: a ≤ b) (f: ℝ → ℝ) (hf: MonotoneOn f (Set.Icc a b)) (hf': f a ≥ 0) : ∑ n in Finset.Icc ⌈ a ⌉₊ ⌊ b ⌋₊, f n =[1] ∫ t in Set.Icc a b, f t ∂ volume + O( f b ) := by
+  convert sum_approx_eq_integral_monotone h f hf hf' (Set.Icc a b) Set.Ioo_subset_Icc_self (Eq.subset rfl)
+  change ∑ n in Finset.Icc ⌈ a ⌉₊ ⌊ b ⌋₊, f (n:ℤ) = ∑ n in discretize (Set.Icc a b), f ↑n
+  rw [<-Finset.sum_image (g := fun n:ℕ ↦ (n:ℤ)) (f := fun n:ℤ ↦ f n)]
+  congr
+  rw [<-Finset.coe_inj,discretize_Icc_nonneg h0 (h0.trans h), Finset.coe_image, Finset.coe_Icc]
   simp
