@@ -3,6 +3,9 @@ import Mathlib.Analysis.NormedSpace.Basic
 import Mathlib.Analysis.Normed.Group.InfiniteSum
 import Mathlib.Analysis.Asymptotics.Asymptotics
 import Mathlib.Order.MinMax
+import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
+import Mathlib.MeasureTheory.Integral.Bochner
+import Mathlib.MeasureTheory.Integral.IntegrableOn
 
 namespace Asymptotics
 
@@ -173,7 +176,7 @@ lemma add_ll_max {Y₁ Y₂:ℝ} (hY₁: 0 ≤ Y₁) (hY₂: 0 ≤ Y₂) : Y₁ 
   . simp [h]; linarith
   simp [le_of_lt h]; linarith
 
-open BigOperators
+open BigOperators MeasureTheory
 
 lemma sum_ll_sum {C:NNReal} {Ω :Type*} {S: Finset Ω} {X: Ω → E} {Y: Ω → ℝ} (h: ∀ s ∈ S, X s ≪[C] Y s) : (∑ s in S, X s) ≪[C] ∑ s in S, Y s := by
   simp at h ⊢
@@ -190,6 +193,27 @@ lemma tsum_ll_tsum {C:NNReal} {Ω :Type*} [CompleteSpace E] {X: Ω → E} {Y: Ω
   apply (norm_tsum_le_tsum_norm this).trans
   rw [<-tsum_mul_left]
   exact tsum_le_tsum h this (Summable.mul_left (C:ℝ) hsum)
+
+lemma integ_ll_integ  {C:NNReal} {Ω :Type*}  [MeasurableSpace Ω] (μ: Measure Ω := by volume_tac) {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {X: Ω → V} {Y: Ω → ℝ} (h: ∀ᵐ s ∂ μ, X s ≪[C] Y s) (hinteg: Integrable Y μ) (hmes: AEStronglyMeasurable X μ): Integrable X μ ∧ (∫ s, X s ∂ μ ≪[C] ∫ s, Y s ∂ μ) := by
+  constructor
+  . apply Integrable.mono' (Integrable.const_mul hinteg C) hmes
+    simp at h
+    exact h
+  simp at h ⊢
+  rw [<- MeasureTheory.integral_mul_left]
+  exact norm_integral_le_of_norm_le (Integrable.const_mul hinteg C) h
+
+/-- missing from Mathlib -/
+theorem nullMeasurableSet_le {α : Type*} {δ : Type*} [TopologicalSpace α] [MeasurableSpace α] [OpensMeasurableSpace α] [MeasurableSpace δ] [LinearOrder α] [OrderClosedTopology α] [SecondCountableTopology α] {μ : MeasureTheory.Measure δ} {f : δ → α} {g : δ → α} (hf : AEMeasurable f μ) (hg : AEMeasurable g μ) : NullMeasurableSet { a | f a ≤ g a } μ :=
+  (hf.prod_mk hg).nullMeasurable measurableSet_le'
+
+lemma integ_ll_integ_set  {C:NNReal} {Ω :Type*}  [MeasurableSpace Ω] (μ: Measure Ω := by volume_tac) {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {E: Set Ω} {X: Ω → V} {Y: Ω → ℝ} (h: ∀ᵐ s ∂ μ, s ∈ E → (X s ≪[C] Y s)) (hinteg: IntegrableOn Y E μ) (hmes: AEStronglyMeasurable X (Measure.restrict μ E)): IntegrableOn X E μ ∧ (∫ s in E, X s ∂ μ ≪[C] ∫ s in E, Y s ∂ μ) := by
+  convert integ_ll_integ (Measure.restrict μ E) (X := X) (Y := Y) ?_ hinteg hmes using 1
+  rwa [MeasureTheory.ae_restrict_iff₀]
+  simp
+  apply nullMeasurableSet_le _ _
+  . exact AEStronglyMeasurable.aemeasurable (Continuous.comp_aestronglyMeasurable (Continuous.norm continuous_id') hmes)
+  exact AEStronglyMeasurable.aemeasurable ( AEStronglyMeasurable.const_mul (Integrable.aestronglyMeasurable hinteg) C)
 
 
 notation:10 X " =[" C "] " Y " + O(" Z ")" => Ll C (X-Y) Z
@@ -256,6 +280,15 @@ lemma sub_of_eqPlusBigO {C:NNReal} {X Y X' Y': E} {Z Z':ℝ} (h: X =[C] Y + O(Z)
 lemma sum_of_eqPlusBigO {C:NNReal} {Ω :Type*} {S: Finset Ω} {X Y: Ω → E} {Z: Ω → ℝ} (h: ∀ s ∈ S, X s=[C] Y s + O(Z s)) : (∑ s in S, X s) =[C] ∑ s in S, Y s + O(∑ s in S, Z s):= by
   rw [eqPlusBigO_def', <-Finset.sum_sub_distrib, <-norm_ll_iff]
   apply sum_ll_sum h
+
+lemma int_of_eqPlusBigO {C:NNReal} {Ω :Type*} [MeasurableSpace Ω]  (μ: Measure Ω := by volume_tac) {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {S: Set Ω} {X Y: Ω → V} {Z: Ω → ℝ} (h: ∀ᵐ s ∂ μ, s ∈ S → (X s =[C] Y s + O(Z s))) (hinteg: IntegrableOn Z S μ) (hXmes : AEStronglyMeasurable X (Measure.restrict μ S)) (hYinteg : IntegrableOn Y S μ): (∫ s in S, X s ∂ μ) =[C] ∫ s in S, Y s ∂ μ + O(∫ s in S, Z s ∂ μ):= by
+  have := integ_ll_integ_set μ h hinteg (AEStronglyMeasurable.sub hXmes  ((integrable_def Y (Measure.restrict μ S)).mp hYinteg).1)
+  rw [eqPlusBigO_def, <-integral_sub]
+  convert this.2
+  . convert Integrable.add this.1 hYinteg
+    ext s
+    simp
+  exact hYinteg
 
 lemma mul_eqPlusBigO_mul {C₁ C₂:NNReal} (hC₁: C₁ ≠ 0) (hC₂: C₂ ≠ 0) {X₁ X₂ Y₁ Y₂:k} {Z₁ Z₂ W₁ W₂:ℝ} (h1: X₁ =[C₁] Y₁ + O(Z₁)) (h2: X₂ =[C₂] Y₂ + O(Z₂)) (h1': Y₁ ≪[C₁] W₁) (h2': Y₂ ≪[C₂] W₂) : X₁*X₂ =[C₁*C₂] Y₁ * Y₂ + O(Z₁*W₂+W₁*Z₂+Z₁*Z₂):= by
   have : X₁*X₂ - Y₁*Y₂ = (X₁-Y₁)*Y₂ + Y₁*(X₂-Y₂) + (X₁-Y₁)*(X₂-Y₂) := by ring

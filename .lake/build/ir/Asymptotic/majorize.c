@@ -1,6 +1,6 @@
 // Lean compiler output
 // Module: Asymptotic.majorize
-// Imports: Init Mathlib.Analysis.Normed.Group.Basic Mathlib.Analysis.NormedSpace.Basic Mathlib.Analysis.Normed.Group.InfiniteSum Mathlib.Analysis.Asymptotics.Asymptotics Mathlib.Order.MinMax
+// Imports: Init Mathlib.Analysis.Normed.Group.Basic Mathlib.Analysis.NormedSpace.Basic Mathlib.Analysis.Normed.Group.InfiniteSum Mathlib.Analysis.Asymptotics.Asymptotics Mathlib.Order.MinMax Mathlib.MeasureTheory.Measure.MeasureSpaceDef Mathlib.MeasureTheory.Integral.Bochner Mathlib.MeasureTheory.Integral.IntegrableOn
 #include <lean/lean.h>
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wunused-parameter"
@@ -17,12 +17,18 @@ static lean_object* l_Asymptotics___aux__Asymptotic__majorize______macroRules__A
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___u226a_x5b___x5d____1___closed__1;
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___u226a_x5b___x5d____1___closed__10;
 lean_object* lean_mk_empty_array_with_capacity(lean_object*);
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__5;
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___u226a_x5b___x5d____1___closed__7;
 LEAN_EXPORT lean_object* l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___u226a_x5b___x5d____1(lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* l___auto____x40_Asymptotic_majorize___hyg_4434_;
+LEAN_EXPORT lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147_;
 static lean_object* l_Asymptotics_term___u226a_x5b___x5d_____closed__15;
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___u226a_x5b___x5d____1___closed__5;
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___u226a_x5b___x5d____1___closed__8;
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__15;
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___u226a_x5b___x5d____1___closed__6;
+lean_object* lean_array_push(lean_object*, lean_object*);
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__12;
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__1___closed__1;
 static lean_object* l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__9;
 LEAN_EXPORT lean_object* l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__1(lean_object*, lean_object*, lean_object*);
@@ -36,11 +42,15 @@ LEAN_EXPORT lean_object* l_Asymptotics___aux__Asymptotic__majorize______unexpand
 lean_object* l_Lean_Syntax_node5(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 uint8_t l_Lean_Syntax_isOfKind(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___x3d_x5b___x5d___x2b__O_x28___x29__1(lean_object*, lean_object*, lean_object*);
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__10;
 LEAN_EXPORT lean_object* l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__2___lambda__1(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 lean_object* l_Lean_Syntax_getNumArgs(lean_object*);
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__2;
 static lean_object* l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__1;
 static lean_object* l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__3;
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__6;
 static lean_object* l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__8;
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__7;
 lean_object* l_Lean_SourceInfo_fromRef(lean_object*, uint8_t);
 static lean_object* l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__2;
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___x3d_x5b___x5d___x2b__O_x28___x29__1___closed__3;
@@ -48,6 +58,7 @@ static lean_object* l_Asymptotics_term___u226a_x5b___x5d_____closed__13;
 static lean_object* l_Asymptotics_term___u226a_x5b___x5d_____closed__16;
 LEAN_EXPORT lean_object* l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__1___lambda__1___boxed(lean_object*, lean_object*, lean_object*);
 static lean_object* l_Asymptotics_term___u226a_x5b___x5d_____closed__10;
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__8;
 static lean_object* l_Asymptotics_term___u226a_x5b___x5d_____closed__9;
 LEAN_EXPORT lean_object* l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29;
 static lean_object* l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__6;
@@ -66,26 +77,36 @@ lean_object* l_Lean_Syntax_getArg(lean_object*, lean_object*);
 uint8_t l_Lean_Syntax_matchesNull(lean_object*, lean_object*);
 static lean_object* l_Asymptotics_term___u226a_x5b___x5d_____closed__7;
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___u226a_x5b___x5d____1___closed__3;
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__17;
 LEAN_EXPORT lean_object* l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__2___lambda__1___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 lean_object* l_Array_append___rarg(lean_object*, lean_object*);
 static lean_object* l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__12;
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__16;
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__1___closed__3;
 lean_object* l_Array_extract___rarg(lean_object*, lean_object*, lean_object*);
 static lean_object* l_Asymptotics_term___u226a_x5b___x5d_____closed__14;
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__18;
 static lean_object* l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__15;
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___x3d_x5b___x5d___x2b__O_x28___x29__1___closed__2;
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__9;
 static lean_object* l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__4;
 static lean_object* l_Asymptotics_term___u226a_x5b___x5d_____closed__3;
 LEAN_EXPORT lean_object* l_Asymptotics_term___u226a_x5b___x5d__;
 static lean_object* l_Asymptotics_term___u226a_x5b___x5d_____closed__12;
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__4;
 lean_object* l_Lean_Name_mkStr2(lean_object*, lean_object*);
+LEAN_EXPORT lean_object* l___auto____x40_Asymptotic_majorize___hyg_7521_;
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___x3d_x5b___x5d___x2b__O_x28___x29__1___closed__1;
 LEAN_EXPORT lean_object* l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__2(lean_object*, lean_object*, lean_object*);
 lean_object* lean_nat_sub(lean_object*, lean_object*);
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__1___lambda__2___closed__1;
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__3;
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___x3d_x5b___x5d___x2b__O_x28___x29__1___closed__6;
 lean_object* l_Lean_Syntax_node8(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__1;
 lean_object* l_Lean_Name_mkStr4(lean_object*, lean_object*, lean_object*, lean_object*);
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__13;
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__14;
 static lean_object* l_Asymptotics_term___u226a_x5b___x5d_____closed__8;
 static lean_object* l_Asymptotics_term___u226a_x5b___x5d_____closed__2;
 static lean_object* l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__7;
@@ -98,6 +119,7 @@ static lean_object* l_Asymptotics_term___u226a_x5b___x5d_____closed__11;
 static lean_object* l_Asymptotics_term___u226a_x5b___x5d_____closed__4;
 lean_object* l_String_toSubstring_x27(lean_object*);
 static lean_object* l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__13;
+static lean_object* l___auto____x40_Asymptotic_majorize___hyg_4147____closed__11;
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___x3d_x5b___x5d___x2b__O_x28___x29__1___closed__5;
 static lean_object* l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__1___closed__2;
 static lean_object* _init_l_Asymptotics_term___u226a_x5b___x5d_____closed__1() {
@@ -684,6 +706,212 @@ lean_dec(x_1);
 return x_9;
 }
 }
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__1() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_from_bytes("Tactic", 6);
+return x_1;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__2() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_from_bytes("tacticSeq", 9);
+return x_1;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__3() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; lean_object* x_4; lean_object* x_5; 
+x_1 = l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___u226a_x5b___x5d____1___closed__1;
+x_2 = l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___u226a_x5b___x5d____1___closed__2;
+x_3 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__1;
+x_4 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__2;
+x_5 = l_Lean_Name_mkStr4(x_1, x_2, x_3, x_4);
+return x_5;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__4() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_from_bytes("tacticSeq1Indented", 18);
+return x_1;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__5() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; lean_object* x_4; lean_object* x_5; 
+x_1 = l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___u226a_x5b___x5d____1___closed__1;
+x_2 = l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___u226a_x5b___x5d____1___closed__2;
+x_3 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__1;
+x_4 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__4;
+x_5 = l_Lean_Name_mkStr4(x_1, x_2, x_3, x_4);
+return x_5;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__6() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_from_bytes("MeasureTheory", 13);
+return x_1;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__7() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_from_bytes("tacticVolume_tac", 16);
+return x_1;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__8() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; 
+x_1 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__6;
+x_2 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__7;
+x_3 = l_Lean_Name_mkStr2(x_1, x_2);
+return x_3;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__9() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_from_bytes("volume_tac", 10);
+return x_1;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__10() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; 
+x_1 = lean_box(2);
+x_2 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__9;
+x_3 = lean_alloc_ctor(2, 2, 0);
+lean_ctor_set(x_3, 0, x_1);
+lean_ctor_set(x_3, 1, x_2);
+return x_3;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__11() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; 
+x_1 = l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__1___lambda__2___closed__1;
+x_2 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__10;
+x_3 = lean_array_push(x_1, x_2);
+return x_3;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__12() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; lean_object* x_4; 
+x_1 = lean_box(2);
+x_2 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__8;
+x_3 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__11;
+x_4 = lean_alloc_ctor(1, 3, 0);
+lean_ctor_set(x_4, 0, x_1);
+lean_ctor_set(x_4, 1, x_2);
+lean_ctor_set(x_4, 2, x_3);
+return x_4;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__13() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; 
+x_1 = l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__1___lambda__2___closed__1;
+x_2 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__12;
+x_3 = lean_array_push(x_1, x_2);
+return x_3;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__14() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; lean_object* x_4; 
+x_1 = lean_box(2);
+x_2 = l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___u226a_x5b___x5d____1___closed__13;
+x_3 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__13;
+x_4 = lean_alloc_ctor(1, 3, 0);
+lean_ctor_set(x_4, 0, x_1);
+lean_ctor_set(x_4, 1, x_2);
+lean_ctor_set(x_4, 2, x_3);
+return x_4;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__15() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; 
+x_1 = l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__1___lambda__2___closed__1;
+x_2 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__14;
+x_3 = lean_array_push(x_1, x_2);
+return x_3;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__16() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; lean_object* x_4; 
+x_1 = lean_box(2);
+x_2 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__5;
+x_3 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__15;
+x_4 = lean_alloc_ctor(1, 3, 0);
+lean_ctor_set(x_4, 0, x_1);
+lean_ctor_set(x_4, 1, x_2);
+lean_ctor_set(x_4, 2, x_3);
+return x_4;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__17() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; 
+x_1 = l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__1___lambda__2___closed__1;
+x_2 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__16;
+x_3 = lean_array_push(x_1, x_2);
+return x_3;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__18() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; lean_object* x_4; 
+x_1 = lean_box(2);
+x_2 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__3;
+x_3 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__17;
+x_4 = lean_alloc_ctor(1, 3, 0);
+lean_ctor_set(x_4, 0, x_1);
+lean_ctor_set(x_4, 1, x_2);
+lean_ctor_set(x_4, 2, x_3);
+return x_4;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4147_() {
+_start:
+{
+lean_object* x_1; 
+x_1 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__18;
+return x_1;
+}
+}
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_4434_() {
+_start:
+{
+lean_object* x_1; 
+x_1 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__18;
+return x_1;
+}
+}
 static lean_object* _init_l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__1() {
 _start:
 {
@@ -1241,12 +1469,23 @@ lean_dec(x_1);
 return x_10;
 }
 }
+static lean_object* _init_l___auto____x40_Asymptotic_majorize___hyg_7521_() {
+_start:
+{
+lean_object* x_1; 
+x_1 = l___auto____x40_Asymptotic_majorize___hyg_4147____closed__18;
+return x_1;
+}
+}
 lean_object* initialize_Init(uint8_t builtin, lean_object*);
 lean_object* initialize_Mathlib_Analysis_Normed_Group_Basic(uint8_t builtin, lean_object*);
 lean_object* initialize_Mathlib_Analysis_NormedSpace_Basic(uint8_t builtin, lean_object*);
 lean_object* initialize_Mathlib_Analysis_Normed_Group_InfiniteSum(uint8_t builtin, lean_object*);
 lean_object* initialize_Mathlib_Analysis_Asymptotics_Asymptotics(uint8_t builtin, lean_object*);
 lean_object* initialize_Mathlib_Order_MinMax(uint8_t builtin, lean_object*);
+lean_object* initialize_Mathlib_MeasureTheory_Measure_MeasureSpaceDef(uint8_t builtin, lean_object*);
+lean_object* initialize_Mathlib_MeasureTheory_Integral_Bochner(uint8_t builtin, lean_object*);
+lean_object* initialize_Mathlib_MeasureTheory_Integral_IntegrableOn(uint8_t builtin, lean_object*);
 static bool _G_initialized = false;
 LEAN_EXPORT lean_object* initialize_Asymptotic_majorize(uint8_t builtin, lean_object* w) {
 lean_object * res;
@@ -1268,6 +1507,15 @@ res = initialize_Mathlib_Analysis_Asymptotics_Asymptotics(builtin, lean_io_mk_wo
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 res = initialize_Mathlib_Order_MinMax(builtin, lean_io_mk_world());
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_Mathlib_MeasureTheory_Measure_MeasureSpaceDef(builtin, lean_io_mk_world());
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_Mathlib_MeasureTheory_Integral_Bochner(builtin, lean_io_mk_world());
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_Mathlib_MeasureTheory_Integral_IntegrableOn(builtin, lean_io_mk_world());
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 l_Asymptotics_term___u226a_x5b___x5d_____closed__1 = _init_l_Asymptotics_term___u226a_x5b___x5d_____closed__1();
@@ -1338,6 +1586,46 @@ l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__1___cl
 lean_mark_persistent(l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__1___closed__2);
 l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__1___closed__3 = _init_l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__1___closed__3();
 lean_mark_persistent(l_Asymptotics___aux__Asymptotic__majorize______unexpand__Asymptotics__Ll__1___closed__3);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__1 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__1();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__1);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__2 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__2();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__2);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__3 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__3();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__3);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__4 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__4();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__4);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__5 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__5();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__5);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__6 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__6();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__6);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__7 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__7();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__7);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__8 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__8();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__8);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__9 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__9();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__9);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__10 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__10();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__10);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__11 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__11();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__11);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__12 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__12();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__12);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__13 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__13();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__13);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__14 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__14();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__14);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__15 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__15();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__15);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__16 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__16();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__16);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__17 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__17();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__17);
+l___auto____x40_Asymptotic_majorize___hyg_4147____closed__18 = _init_l___auto____x40_Asymptotic_majorize___hyg_4147____closed__18();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147____closed__18);
+l___auto____x40_Asymptotic_majorize___hyg_4147_ = _init_l___auto____x40_Asymptotic_majorize___hyg_4147_();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4147_);
+l___auto____x40_Asymptotic_majorize___hyg_4434_ = _init_l___auto____x40_Asymptotic_majorize___hyg_4434_();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_4434_);
 l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__1 = _init_l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__1();
 lean_mark_persistent(l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__1);
 l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__2 = _init_l_Asymptotics_term___x3d_x5b___x5d___x2b__O_x28___x29___closed__2();
@@ -1382,6 +1670,8 @@ l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___x
 lean_mark_persistent(l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___x3d_x5b___x5d___x2b__O_x28___x29__1___closed__5);
 l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___x3d_x5b___x5d___x2b__O_x28___x29__1___closed__6 = _init_l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___x3d_x5b___x5d___x2b__O_x28___x29__1___closed__6();
 lean_mark_persistent(l_Asymptotics___aux__Asymptotic__majorize______macroRules__Asymptotics__term___x3d_x5b___x5d___x2b__O_x28___x29__1___closed__6);
+l___auto____x40_Asymptotic_majorize___hyg_7521_ = _init_l___auto____x40_Asymptotic_majorize___hyg_7521_();
+lean_mark_persistent(l___auto____x40_Asymptotic_majorize___hyg_7521_);
 return lean_io_result_mk_ok(lean_box(0));
 }
 #ifdef __cplusplus

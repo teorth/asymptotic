@@ -48,7 +48,38 @@ lemma ordBounded_def {α : Type*} [Preorder α] {s : Set α} : OrdBounded s ↔ 
 
 lemma ordBounded_iff_bounded {s: Set ℝ} : OrdBounded s ↔  Bornology.IsBounded s := Real.isBounded_iff_bddBelow_bddAbove.symm
 
-
+lemma interval_iff_ord_connected_ordbounded {I: Set ℝ} : Set.OrdConnected I ∧ OrdBounded I ↔ ∃ a b : ℝ, a ≤ b ∧ Set.Ioo a b ⊆ I ∧ I ⊆ Set.Icc a b := by
+  constructor
+  . rintro ⟨ hc, hb ⟩
+    rcases Set.eq_empty_or_nonempty I with h | h
+    . use 0, 0
+      simp [h]
+    use sInf I, sSup I
+    refine ⟨ ?_, ?_, ?_ ⟩
+    . exact Real.sInf_le_sSup _ hb.1 hb.2
+    . intro x hx
+      simp at hx
+      rcases Real.lt_sInf_add_pos h (sub_pos.mpr hx.1) with ⟨ a, ha ⟩
+      rcases Real.add_neg_lt_sSup h (sub_neg.mpr hx.2) with ⟨ b, hb ⟩
+      apply Set.OrdConnected.out hc ha.1 hb.1
+      simp
+      constructor
+      . linarith only [ha.2]
+      linarith only [hb.2]
+    intro x hx
+    simp
+    exact ⟨csInf_le hb.1 hx, le_csSup hb.2 hx⟩
+  rintro ⟨ a, b, _, hI, hI' ⟩
+  constructor
+  . apply Set.ordConnected_of_Ioo
+    intro x hx y hy _
+    apply LE.le.trans _ hI
+    intro z hz
+    replace hx := hI' hx
+    replace hy := hI' hy
+    simp at hz hx hy ⊢
+    exact ⟨ lt_of_le_of_lt hx.1 hz.1, lt_of_lt_of_le hz.2 hy.2 ⟩
+  exact OrdBounded.mono hI' (OrdBounded.icc a b)
 
 end ordBounded
 
@@ -241,6 +272,10 @@ lemma Set.discretize_Ioc_nonneg {a b:ℝ} (ha: 0 ≤ a) (hb: 0 ≤ b): (Set.Ioc 
 lemma Set.discretize_Ioo_nonneg {a b:ℝ} (ha: 0 ≤ a) (hb: 0 ≤ b): (Set.Ioo a b).discretize = Finset.image ((↑) : ℕ → ℤ) (Finset.Ioo ⌊ a ⌋₊ ⌈ b ⌉₊) := by
   simp [Nat.cast_floor_eq_int_floor ha, Nat.cast_ceil_eq_int_ceil hb]
 
+open Classical in
+lemma Set.discretize_filter {I: Set ℝ} (hbound: OrdBounded I) (E: Set ℝ) : Finset.filter (fun n:ℤ ↦ (n:ℝ) ∈ E) I.discretize = (I ∩ E).discretize := by
+  ext n
+  simp [Set.discretize_mem hbound n, Set.discretize_mem (OrdBounded.mono (Set.inter_subset_left I E) hbound) n]
 
 
 end discretize
