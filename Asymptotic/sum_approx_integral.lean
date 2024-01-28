@@ -461,33 +461,32 @@ lemma sum_approx_eq_integral_monotone {a b:ℝ} (h: a ≤ b) (f: ℝ → ℝ) (h
   exact hI (Set.mem_Ioo.mpr ⟨ lt_neg.mp hx.2, neg_lt.mp hx.1 ⟩)
 
 
-lemma sum_approx_eq_integral {a b c:ℝ} (h: a ≤ b) (f: ℝ → E)  (hderiv: ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t) (hcont': ContinuousOn (deriv f) (Set.Icc a b)) (hc: c ∈ Set.Icc a b) (I: Set ℝ) (hI: Set.Ioo a b ⊆ I) (hI': I ⊆ Set.Icc a b) : ∑ n in I.discretize, f n =[1] ∫ t in I, f t ∂ volume + O( ‖f c‖ + ∫ t in Set.Icc a b, ‖deriv f t‖ ∂ volume) := by
-  rcases interval_iff_ord_connected_ordbounded.mpr ⟨ a, b, h, hI, hI' ⟩ with ⟨ _, hbound ⟩
-  have hmes: MeasurableSet I := by
-    rw [<-measurableSet_insert (a := a), <-measurableSet_insert (a := b)]
-    convert measurableSet_Icc (a := a) (b := b)
-    ext x
-    simp
+lemma sum_approx_eq_integral {a b c:ℝ} (h: a ≤ b) (f: ℝ → E)  (hderiv: ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t) (hcont': ContinuousOn (deriv f) (Set.Icc a b)) (hc: c ∈ Set.Icc a b) (I: Set ℝ) (hI: Set.Ioo a b ⊆ I) (hI': I ⊆ Set.Icc a b) : ∑ n in I.discretize, f n =[1] ∫ t in Set.Icc a b, f t ∂ volume + O( ‖f c‖ + ∫ t in Set.Icc a b, ‖deriv f t‖ ∂ volume) := by
+  rcases interval_iff_ord_connected_ordbounded.mpr ⟨ a, b, h, hI, hI' ⟩ with ⟨ hconn, hbound ⟩
+  have hae : I =ᶠ[MeasureTheory.Measure.ae volume] Set.Icc a b := by
+    apply Filter.eventuallyEq_of_mem (s := {a,b}ᶜ)
+    . rw [MeasureTheory.compl_mem_ae_iff]
+      exact Set.Finite.measure_zero (Set.toFinite {a, b}) _
+    intro x hx
+    simp at hx ⊢
     constructor
-    . intro this
-      rcases this with this | this | this
-      . simp [this, h]
-      . simp [this, h]
-      exact Set.mem_Icc.mp (hI' this)
-    intro this
-    rcases le_iff_lt_or_eq.mp this.1 with h1 | h1
-    . rcases le_iff_lt_or_eq.mp this.2 with h2 | h2
-      . right; right; apply hI
-        simp [h1, h2]
-      simp [h2]
-    simp [h1]
+    . intro h
+      exact hI' h
+    intro h
+    apply hI
+    change x ∈ Set.Icc a b at h
+    simp at h ⊢
+    contrapose! hx
+    rcases le_iff_lt_or_eq.mp h.1 with h' | h'
+    . right; exact le_antisymm h.2 (hx h')
+    left; exact h'.symm
   have repr := ftoc f hderiv hcont' hc
-  have split_lhs : ∑ n in I.discretize, f n = ∑ n in I.discretize, f c + ∫ s in Set.Icc a b, ∑ n in I.discretize, (cutoff c n s) • deriv f s := by
+  have split_lhs : ∑ n in I.discretize, f n = ∑ _n in I.discretize, f c + ∫ s in Set.Icc a b, ∑ n in I.discretize, (cutoff c n s) • deriv f s := by
     rw [integral_finset_sum, <-Finset.sum_add_distrib]
     . apply Finset.sum_congr rfl
       intro n hn
       exact repr n (hI' ((Set.discretize_mem hbound n).mp hn))
-    intro n hn
+    intro n _
     rw [<-integrableOn_def]
     apply IntegrableOn.smul_continuousOn _ hcont' isCompact_Icc
     rcases le_or_gt c n with h | h
@@ -501,38 +500,40 @@ lemma sum_approx_eq_integral {a b c:ℝ} (h: a ≤ b) (f: ℝ → E)  (hderiv: �
     convert_to IntegrableOn (fun _ ↦ (-1:ℝ)) (Set.Icc a b)
     rw [integrableOn_const]
     simp
-  have split_rhs : ∫ t in I, f t ∂ volume = ∫ t in I, f c ∂ volume + ∫ s in Set.Icc a b, (∫ t in I, (cutoff c t s) • deriv f s ∂ volume) ∂ volume := by
-    have : Integrable (fun x ↦ cutoff c x.2 x.1 • deriv f x.1) (Measure.prod (Measure.restrict volume (Set.Icc a b)) (Measure.restrict volume I)) := by
-      rw [Measure.prod_restrict,<-integrableOn_def]
-      apply MeasureTheory.IntegrableOn.mono_set (IntegrableOn.smul_continuousOn _ _ (IsCompact.prod isCompact_Icc isCompact_Icc)) (Set.prod_mono_right hI')
-      . simp_rw [cutoff]
-        apply Integrable.add
-        . rw [<-integrableOn_def]
-          apply IntegrableOn.indicator
-          . convert_to IntegrableOn (fun _ ↦ (1:ℝ)) (Set.Icc a b ×ˢ (Set.Icc a b))
-            rw [integrableOn_const, Measure.volume_eq_prod, Measure.prod_prod]
-            simp [<-ENNReal.ofReal_mul (sub_nonneg.mpr h)]
-          exact measurableSet_le measurable_fst measurable_snd
-        have : (fun (x: ℝ × ℝ) ↦ -if x.1 ≤ c then (1:ℝ) else 0) = (fun (x: ℝ × ℝ) ↦ if x.1 ≤ c then (-1:ℝ) else 0) := by
-          ext x
-          by_cases h : x.1 ≤ c
-          all_goals simp [h]
-        rw [<-integrableOn_def, this]
+  have hinteg : IntegrableOn (fun x => cutoff c x.2 x.1 • deriv f x.1) (Set.Icc a b ×ˢ Set.Icc a b) := by
+    apply IntegrableOn.smul_continuousOn _ _ (IsCompact.prod isCompact_Icc isCompact_Icc)
+    . simp_rw [cutoff]
+      apply Integrable.add
+      . rw [<-integrableOn_def]
         apply IntegrableOn.indicator
-        . convert_to IntegrableOn (fun _ ↦ (-1:ℝ)) (Set.Icc a b ×ˢ (Set.Icc a b))
+        . convert_to IntegrableOn (fun _ ↦ (1:ℝ)) (Set.Icc a b ×ˢ (Set.Icc a b))
           rw [integrableOn_const, Measure.volume_eq_prod, Measure.prod_prod]
           simp [<-ENNReal.ofReal_mul (sub_nonneg.mpr h)]
-        exact measurableSet_le measurable_fst measurable_const
-      apply ContinuousOn.comp (g := deriv f) (f := Prod.fst) (t := Set.Icc a b) hcont' (Continuous.continuousOn continuous_fst)
-      intro x hx
-      exact (Set.mem_prod.mp hx).1
+        exact measurableSet_le measurable_fst measurable_snd
+      have : (fun (x: ℝ × ℝ) ↦ -if x.1 ≤ c then (1:ℝ) else 0) = (fun (x: ℝ × ℝ) ↦ if x.1 ≤ c then (-1:ℝ) else 0) := by
+        ext x
+        by_cases h : x.1 ≤ c
+        all_goals simp [h]
+      rw [<-integrableOn_def, this]
+      apply IntegrableOn.indicator
+      . convert_to IntegrableOn (fun _ ↦ (-1:ℝ)) (Set.Icc a b ×ˢ (Set.Icc a b))
+        rw [integrableOn_const, Measure.volume_eq_prod, Measure.prod_prod]
+        simp [<-ENNReal.ofReal_mul (sub_nonneg.mpr h)]
+      exact measurableSet_le measurable_fst measurable_const
+    apply ContinuousOn.comp (g := deriv f) (f := Prod.fst) (t := Set.Icc a b) hcont' (Continuous.continuousOn continuous_fst)
+    intro x hx
+    exact (Set.mem_prod.mp hx).1
+  have split_rhs : ∫ t in Set.Icc a b, f t ∂ volume = ∫ _t in Set.Icc a b, f c ∂ volume + ∫ s in Set.Icc a b, (∫ t in Set.Icc a b, (cutoff c t s) • deriv f s ∂ volume) ∂ volume := by
+    have : Integrable (fun x ↦ cutoff c x.2 x.1 • deriv f x.1) (Measure.prod (Measure.restrict volume (Set.Icc a b)) (Measure.restrict volume (Set.Icc a b))) := by
+      rw [Measure.prod_restrict,<-integrableOn_def]
+      exact hinteg
     rw [integral_integral_swap, <-integral_add]
-    . apply set_integral_congr hmes
+    . apply set_integral_congr measurableSet_Icc
       intro x hx
-      exact repr x (hI' hx)
+      exact repr x hx
     . rw [<-integrableOn_def, integrableOn_const]
       right
-      exact lt_of_le_of_lt (measure_mono hI')  measure_Icc_lt_top
+      exact measure_Icc_lt_top
     . convert Integrable.integral_prod_right (f := fun x ↦ cutoff c x.2 x.1 • deriv f x.1) this
     exact this
   rw [split_lhs, split_rhs]
@@ -541,31 +542,85 @@ lemma sum_approx_eq_integral {a b c:ℝ} (h: a ≤ b) (f: ℝ → E)  (hderiv: �
     rw [nsmul_eq_smul_cast (R := ℝ), <-sub_smul, norm_smul]
     apply mul_le_of_le_one_left (norm_nonneg _)
     have := interval_count h I hI hI'
-    simp at this
-    convert this using 1
+    simp at this ⊢
+    convert this using 3
+    exact ENNReal.toReal_ofReal (sub_nonneg.mpr h)
   convert int_of_eqPlusBigO ?_ ?_ ?_ ?_ ?_
   . apply Filter.eventually_of_forall
-    intro s hs
+    intro s _
     simp
     rw [<-Finset.sum_smul, integral_smul_const, <-sub_smul, norm_smul]
     apply mul_le_of_le_one_left (norm_nonneg _)
     by_cases h: s ≤ c
-    . have (x:ℝ) : cutoff c x s = - Set.indicator (Set.Iio s) 1 x := by
+    . have (x:ℝ) : cutoff c x s = -Set.indicator (Set.Iio s) 1 x := by
         simp [cutoff, h, Set.indicator]
         by_cases h': s ≤ x
         . simp [h', not_lt.mpr h']
         simp [h', not_le.mp h']
-      simp [this]
-      sorry
+      rw [<-set_integral_congr_set_ae hae]
+      simp [this, integral_neg, Finset.sum_indicator_eq_sum_filter]
+      have : Finset.filter (fun i:ℤ => i < s) I.discretize = (Set.Iio s ∩ I).discretize := by
+        convert Set.discretize_filter hbound (Set.Iio s) using 2
+        exact Set.inter_comm (Set.Iio s) I
+      rw [this]
+      have hbound' : OrdBounded (Set.Iio s ∩ I) := OrdBounded.mono (Set.inter_subset_right _ _) hbound
+      have hconn' : Set.OrdConnected (Set.Iio s ∩ I) := Set.OrdConnected.inter Set.ordConnected_Iio hconn
+      have := interval_count' hconn' hbound'
+      simp at this
+      rw [<- abs_neg]
+      convert this using 2
+      abel
     have (x:ℝ) : cutoff c x s = Set.indicator (Set.Ici s) 1 x := by
       simp [cutoff, h, Set.indicator]
-    simp [this]
-    rw [Finset.sum_indicator_eq_sum_filter]
+    rw [<-set_integral_congr_set_ae hae]
+    simp [this, Finset.sum_indicator_eq_sum_filter]
+    have : Finset.filter (fun i:ℤ => s ≤ i) I.discretize = (Set.Ici s ∩ I).discretize := by
+      convert Set.discretize_filter hbound (Set.Ici s) using 2
+      exact Set.inter_comm (Set.Ici s) I
+    rw [this]
+    have hbound' : OrdBounded (Set.Ici s ∩ I) := OrdBounded.mono (Set.inter_subset_right _ _) hbound
+    have hconn' : Set.OrdConnected (Set.Ici s ∩ I) := Set.OrdConnected.inter Set.ordConnected_Ici hconn
+    have := interval_count' hconn' hbound'
+    simp at this
+    exact this
+  . convert MeasureTheory.IntegrableOn.continuousOn_mul (g := fun t ↦ ‖deriv f t‖) (g' := fun _ ↦ 1) ?_ ?_ isCompact_Icc using 1
+    . simp only [mul_one]
+    . exact Continuous.comp_continuousOn (g := fun x ↦ ‖x‖) continuous_norm hcont'
     simp
-    sorry
-  . sorry
-  . sorry
-  sorry
+  . apply Finset.aestronglyMeasurable_sum
+    intro n _
+    apply MeasureTheory.AEStronglyMeasurable.smul
+    . apply Measurable.aestronglyMeasurable
+      simp [cutoff]
+      apply Measurable.sub
+      . apply Measurable.indicator measurable_const
+        convert measurableSet_Iic (a := (n:ℝ)) using 1
+      apply Measurable.indicator measurable_const
+      convert measurableSet_Iic (a := c) using 1
+    exact ContinuousOn.aestronglyMeasurable hcont' measurableSet_Icc
+  rw [integrableOn_def]
+  convert Integrable.integral_prod_right (f := fun x ↦ cutoff c x.1 x.2 • deriv f x.2) ?_
+  . exact Restrict.sigmaFinite volume (Set.Icc a b)
+  . exact Restrict.sigmaFinite volume (Set.Icc a b)
+  rw [Measure.prod_restrict, <-integrableOn_def]
+  set e : (ℝ × ℝ) ≃ᵐ (ℝ × ℝ) := {
+    toFun := Prod.swap,
+    invFun := Prod.swap,
+    left_inv := congrFun rfl,
+    right_inv := congrFun rfl,
+    measurable_toFun := measurable_swap
+    measurable_invFun := measurable_swap
+  }
+  have hmap : (Measure.prod volume volume).map e = (Measure.prod volume volume) := by
+    simp
+    apply Measure.prod_swap
+  rw [<- hmap, integrableOn_map_equiv e]
+  convert hinteg using 2
+  ext x
+  rcases x with ⟨ x, y ⟩
+  simp
+  tauto
+
 
 
 lemma sum_approx_eq_integral_antitone_nat_ico {a b:ℝ} (h0: 0 ≤ a) (h: a ≤ b) (f: ℝ → ℝ) (hf: AntitoneOn f (Set.Icc a b)) (hf': f b ≥ 0) : ∑ n in Finset.Ico ⌈ a ⌉₊ ⌈ b ⌉₊, f n =[1] ∫ t in Set.Ico a b, f t ∂ volume + O( f a ) := by
