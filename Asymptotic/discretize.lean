@@ -224,11 +224,11 @@ lemma Nat.image_cast_int_Icc_finset (a b:ℕ) : Finset.image (↑) (Finset.Icc a
 
 @[simp]
 lemma Nat.image_cast_int_Ioc_finset (a b:ℕ) : Finset.image (↑) (Finset.Ioc a b) = Finset.Ioc (a:ℤ) (b:ℤ) := by
-  simp [<-Finset.coe_inj, Finset.coe_image, Finset.coe_Icc]
+  simp [<-Finset.coe_inj, Finset.coe_image, Finset.coe_Ioc]
 
 @[simp]
 lemma Nat.image_cast_int_Ioo_finset (a b:ℕ) : Finset.image (↑) (Finset.Ioo a b) = Finset.Ioo (a:ℤ) (b:ℤ) := by
-  simp [<-Finset.coe_inj, Finset.coe_image, Finset.coe_Ico]
+  simp [<-Finset.coe_inj, Finset.coe_image, Finset.coe_Ioo]
 
 
 end nat_to_int
