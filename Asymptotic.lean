@@ -1,1 +1,3 @@
-def hello := "world"
+import Asymptotic.discretize
+import Asymptotic.majorize
+import Asymptotic.sum_approx_integral
