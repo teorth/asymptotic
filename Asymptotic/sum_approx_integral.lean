@@ -9,7 +9,6 @@ import Mathlib.MeasureTheory.Integral.IntervalIntegral
 import Mathlib.MeasureTheory.Integral.FundThmCalculus
 import Mathlib.Data.Set.Intervals.OrdConnected
 import Mathlib.MeasureTheory.Measure.Haar.Unique
-import Mathlib.Init.Data.Int.CompLemmas
 
 -- Tools for comparing a sum with an integral.
 

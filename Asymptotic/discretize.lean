@@ -1,6 +1,5 @@
 import Mathlib.Data.Set.Card
 import Mathlib.Data.Set.Intervals.OrdConnected
-import Mathlib.Init.Data.Int.CompLemmas
 import Mathlib.Data.Int.Interval
 import Mathlib.Order.LocallyFinite
 import Mathlib.Order.Bounds.Basic
