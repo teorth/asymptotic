@@ -178,7 +178,7 @@ lemma add_ll_max {Y₁ Y₂:ℝ} (hY₁: 0 ≤ Y₁) (hY₂: 0 ≤ Y₂) : Y₁ 
 
 open BigOperators MeasureTheory
 
-lemma sum_ll_sum {C:NNReal} {Ω :Type*} {S: Finset Ω} {X: Ω → E} {Y: Ω → ℝ} (h: ∀ s ∈ S, X s ≪[C] Y s) : (∑ s in S, X s) ≪[C] ∑ s in S, Y s := by
+lemma sum_ll_sum {C:NNReal} {Ω :Type*} {S: Finset Ω} {X: Ω → E} {Y: Ω → ℝ} (h: ∀ s ∈ S, X s ≪[C] Y s) : (∑ s ∈ S, X s) ≪[C] ∑ s ∈ S, Y s := by
   simp at h ⊢
   rw [Finset.mul_sum]
   exact (norm_sum_le S X).trans (Finset.sum_le_sum h)
@@ -277,7 +277,7 @@ lemma sub_of_eqPlusBigO {C:NNReal} {X Y X' Y': E} {Z Z':ℝ} (h: X =[C] Y + O(Z)
   rw [(show X-X' - (Y-Y') = (X-Y)-(X'-Y') by abel), (show C * (Z + Z') = C*Z + C*Z' by ring)]
   apply LE.le.trans (norm_sub_le _ _) (add_le_add h h')
 
-lemma sum_of_eqPlusBigO {C:NNReal} {Ω :Type*} {S: Finset Ω} {X Y: Ω → E} {Z: Ω → ℝ} (h: ∀ s ∈ S, X s=[C] Y s + O(Z s)) : (∑ s in S, X s) =[C] ∑ s in S, Y s + O(∑ s in S, Z s):= by
+lemma sum_of_eqPlusBigO {C:NNReal} {Ω :Type*} {S: Finset Ω} {X Y: Ω → E} {Z: Ω → ℝ} (h: ∀ s ∈ S, X s=[C] Y s + O(Z s)) : (∑ s ∈ S, X s) =[C] ∑ s ∈ S, Y s + O(∑ s ∈ S, Z s):= by
   rw [eqPlusBigO_def', <-Finset.sum_sub_distrib, <-norm_ll_iff]
   apply sum_ll_sum h
 
