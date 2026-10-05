@@ -67,11 +67,14 @@ lemma ll_refl {X:ℝ} (hX: 0 ≤ X) : X ≪[1] X := by simp [abs_of_nonneg hX]
 lemma norm_ll_iff (C:NNReal) (X:E) (Y:ℝ) : (X ≪[C] Y) ↔ (‖X‖ ≪[C] Y) := by
   simp
 
-lemma ll_trans {C₁ C₂:NNReal} (hC₁: C₁ ≠ 0) {X:E} {Y Z:ℝ} (hXY: X ≪[C₁] Y) (hYZ: Y ≪[C₂] Z) : X ≪[C₁*C₂] Z := by
-  simp [abs_of_nonneg (nonneg_of_ll hC₁ hXY)] at hXY hYZ ⊢
-  apply hXY.trans
-  rw [mul_assoc]
-  exact mul_le_mul_of_nonneg_left hYZ (NNReal.coe_nonneg C₁)
+lemma ll_trans {C₁ C₂:NNReal} {X:E} {Y Z:ℝ} (hXY: X ≪[C₁] Y) (hYZ: Y ≪[C₂] Z) : X ≪[C₁*C₂] Z := by
+  simp only [ll_def, NNReal.coe_mul] at hXY hYZ ⊢
+  calc
+    ‖X‖ ≤ (C₁:ℝ) * ‖Y‖ := hXY.trans (mul_le_mul_of_nonneg_left
+      (by simpa only [Real.norm_eq_abs] using le_abs_self Y) (NNReal.coe_nonneg C₁))
+    _ ≤ ((C₁:ℝ) * C₂) * Z := by
+      rw [mul_assoc]
+      exact mul_le_mul_of_nonneg_left hYZ (NNReal.coe_nonneg C₁)
 
 lemma ll_of_ll_of_le {C:NNReal} {X:E} {Y Z:ℝ} (hXY: X ≪[C] Y) (hYZ: Y ≤ Z) : X ≪[C] Z := by
   simp at hXY ⊢
@@ -79,7 +82,7 @@ lemma ll_of_ll_of_le {C:NNReal} {X:E} {Y Z:ℝ} (hXY: X ≪[C] Y) (hYZ: Y ≤ Z)
   exact mul_le_mul_of_nonneg_left hYZ (NNReal.coe_nonneg C)
 
 lemma ll_of_le_of_ll {C:NNReal} {X:E} {Y Z:ℝ} (hXY: ‖X‖ ≤ Y) (hYZ: Y ≪[C] Z) : X ≪[C] Z := by
-  convert ll_trans one_ne_zero (ll_of_le hXY) hYZ
+  convert ll_trans (ll_of_le hXY) hYZ
   exact (one_mul C).symm
 
 lemma ll_of_le_of_ll' {C:NNReal} {X Y Z:ℝ} (hX: 0 ≤ X) (hXY: X ≤ Y) (hYZ: Y ≪[C] Z) : X ≪[C] Z := by
@@ -250,7 +253,7 @@ lemma eqPlusBigO_of_zero (C:NNReal) (X:E) {Y:ℝ} : (X =[C] 0 + O(Y)) ↔ (X ≪
 
 lemma eqPlusBigO_increase_const {C₁ C₂:NNReal} (hC₁: C₁ ≠ 0) {X Y:E} {Z:ℝ} (hXY : X=[C₁] Y + O(Z)) (hC : C₁ ≤ C₂) : X =[C₂] Y + O(Z) := ll_increase_const hC₁ hXY hC
 
-lemma eqPlusBigO_of_ll {C₁ C₂: NNReal} (hC₁: C₁ ≠ 0) (X:E) {Y:E} {Z Z':ℝ} (h: X =[C₁] Y + O(Z)) (h': Z ≪[C₂] Z'): X =[C₁*C₂] Y + O(Z') := ll_trans hC₁ h h'
+lemma eqPlusBigO_of_ll {C₁ C₂: NNReal} (X:E) {Y:E} {Z Z':ℝ} (h: X =[C₁] Y + O(Z)) (h': Z ≪[C₂] Z'): X =[C₁*C₂] Y + O(Z') := ll_trans h h'
 
 lemma eqPlusBigO_of_le {C: NNReal} (X:E) {Y:E} {Z Z':ℝ} (h: X =[C] Y + O(Z)) (h': Z ≤ Z'): X =[C] Y + O(Z') := ll_of_ll_of_le h h'
 
