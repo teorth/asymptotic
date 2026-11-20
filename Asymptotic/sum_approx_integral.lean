@@ -182,7 +182,8 @@ lemma unit_interval_cover {I : Set ℝ} [hI: Set.OrdConnected I]  (hbound: OrdBo
   intro ha'
   replace ha' : x ≥ a+1 := by
     contrapose! ha'
-    exact ⟨ (Set.mem_of_mem_inter_left ha) hx, ha' ⟩
+    -- a is a lower bound of I, and x ∈ I, so x sits in Ico a (a+1)
+    exact ⟨ (mem_lowerBounds.mp ha.1) x hx, ha' ⟩
   use ⌊ x ⌋
   refine ⟨ Int.floor_le x, ?_, Int.lt_floor_add_one x ⟩
   rw [Set.discretize_mem hbound _]
